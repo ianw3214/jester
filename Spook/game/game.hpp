@@ -1,6 +1,9 @@
 #pragma once
 #include "core/engine.hpp"
 
+#include "unit.hpp"
+#include "player.hpp"
+
 #include <vector>
 
 constexpr uint32_t kTilesize = 96;
@@ -9,51 +12,6 @@ constexpr uint32_t kTilesize = 96;
 struct Tile
 {
     int index;
-};
-
-//////////////////////////////////////////////////////
-class Unit
-{
-public:
-    enum class InputState
-    {
-        NONE,
-        MOVE,
-        ATTACK,
-        INVENTORY
-    };
-
-    struct PathNode
-    {
-        uint32_t x;
-        uint32_t y;
-    };
-
-    Unit(int x = 0, int y = 0);
-
-    void setState(InputState state) { m_inputState = state; }
-
-    uint32_t getX() const { return m_pos_x; }
-    uint32_t getY() const { return m_pos_y; }
-    InputState getState() const { return m_inputState; }
-
-    void Render(int cam_x, int cam_y) const;
-
-    void Select();
-    void Deselect();
-
-private:
-    Texture * m_texture;
-    uint32_t m_unitWidth;
-    uint32_t m_unitHeight;
-
-    // Position stored in terms of tile position
-    uint32_t m_pos_x;
-    uint32_t m_pos_y;
-
-    // Unit states
-    InputState m_inputState;
-    std::vector<PathNode> m_movePath;
 };
 
 //////////////////////////////////////////////////////
@@ -71,6 +29,8 @@ public:
 
     void update() override;
     void render() override;
+
+    bool checkOccupied(unsigned int x, unsigned int y) const;
 private:
     // Map data
     uint32_t m_map_width;
@@ -78,22 +38,24 @@ private:
     std::vector<Tile> m_tilemap;
 
     // Game entities
-    std::vector<Unit> m_units;
+    std::vector<Unit*> m_units;
+    std::vector<Player*> m_players; // references, do not own
 
     // Textures
     Texture * m_tile_texture;
     Texture * m_ui_texture;
+    Texture * m_white_overlay;
 
     // Game State
     uint32_t m_camera_x;
     uint32_t m_camera_y;
 
-    Unit * m_selected;
+    Player * m_selected;
     bool m_playerTurn;
 
     bool m_panning;
     uint32_t m_pan_start_x;
     uint32_t m_pan_start_y;
-    uint32_t m_pan_start_cam_x;
-    uint32_t m_pan_start_cam_y;
+    int32_t m_pan_start_cam_x;
+    int32_t m_pan_start_cam_y;
 };

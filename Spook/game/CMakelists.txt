@@ -1,1 +1,1 @@
-target_sources(Spook PRIVATE game.cpp)
+target_sources(Spook PRIVATE game.cpp unit.cpp player.cpp)

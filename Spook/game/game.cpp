@@ -1,34 +1,5 @@
 #include "game.hpp"
 
-Unit::Unit(int x, int y)
-    : m_texture(new Texture("res/unit.png"))
-    , m_unitWidth(64)
-    , m_unitHeight(128)
-    , m_pos_x(x)
-    , m_pos_y(y)
-    , m_inputState(InputState::NONE)
-{}
-
-void Unit::Render(int cam_x, int cam_y) const
-{
-    m_texture->render(
-        m_pos_x * kTilesize - cam_x + (kTilesize - m_unitWidth) / 2, 
-        m_pos_y * kTilesize - cam_y + kTilesize - m_unitHeight, 
-        m_unitWidth, 
-        m_unitHeight);
-}
-
-void Unit::Select()
-{
-    m_texture->setBlendMode(SDL_BLENDMODE_ADD);
-    m_texture->setColourModulation({255, 255, 255});
-}
-void Unit::Deselect()
-{
-    m_texture->setBlendMode(SDL_BLENDMODE_BLEND);
-    m_texture->setColourModulation({255, 255, 255});
-}
-
 GameState::GameState()
     : m_map_width(10)
     , m_map_height(10)
@@ -50,11 +21,42 @@ GameState::GameState()
     createFont("ui30", "res/Munro.ttf", 30);
     m_tile_texture = new Texture("res/tile.png");
     m_ui_texture = new Texture("res/ui_base.png");
+    m_white_overlay = new Texture("res/white_overlay.png");
 
     // Initialize some units
-    m_units.emplace_back();
-    m_units.emplace_back(4, 5);
-    m_units.emplace_back(7, 6);
+    {
+        Player * player = new Player(0, 0);
+        player->SetGameState(this);
+        m_units.push_back(player);
+        m_players.push_back(player);   
+    }
+    {
+        Player * player = new Player(6, 7);
+        player->SetGameState(this);
+        m_units.push_back(player);
+        m_players.push_back(player);   
+    }
+    {
+        Player * player = new Player(4, 3);
+        player->SetGameState(this);
+        m_units.push_back(player);
+        m_players.push_back(player);   
+    }
+    {
+        Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 2, 2);
+        unit->SetGameState(this);
+        m_units.push_back(unit);
+    }
+    {
+        Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 3, 3);
+        unit->SetGameState(this);
+        m_units.push_back(unit);
+    }
+    {
+        Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 4, 4);
+        unit->SetGameState(this);
+        m_units.push_back(unit);
+    }
 }
 
 GameState::~GameState()
@@ -79,30 +81,41 @@ void GameState::update()
     if (leftMousePressed())
     {
         bool handled = false;
-        int mouseTileX = (getMouseX() + m_camera_x) / kTilesize;
-        int mouseTileY = (getMouseY() + m_camera_y) / kTilesize;
-        for (Unit & unit : m_units)
+        // Handle inputs for the current selected unit
+        if (m_selected)
         {
-            if (unit.getX() == mouseTileX && unit.getY() == mouseTileY)
+            if (m_selected->HandleClick(getMouseX(), getMouseY(), m_camera_x, m_camera_y, kTilesize))
             {
-                if (m_selected) m_selected->Deselect();
-                m_selected = &unit;
-                m_selected->Select();
                 handled = true;
-                break;
             }
         }
         if (!handled)
         {
-            if (m_selected) m_selected->Deselect();
-            m_selected = nullptr;
-            if (!m_panning)
+            int mouseTileX = (getMouseX() + m_camera_x) / kTilesize;
+            int mouseTileY = (getMouseY() + m_camera_y) / kTilesize;
+            for (Player * player : m_players)
             {
-                m_pan_start_x = getMouseX();
-                m_pan_start_y = getMouseY();
-                m_pan_start_cam_x = m_camera_x;
-                m_pan_start_cam_y = m_camera_y;
-                m_panning = true;
+                if (player->getX() == mouseTileX && player->getY() == mouseTileY)
+                {
+                    if (m_selected) m_selected->Deselect();
+                    m_selected = player;
+                    m_selected->Select();
+                    handled = true;
+                    break;
+                }
+            }
+            if (!handled)
+            {
+                if (m_selected) m_selected->Deselect();
+                m_selected = nullptr;
+                if (!m_panning)
+                {
+                    m_pan_start_x = getMouseX();
+                    m_pan_start_y = getMouseY();
+                    m_pan_start_cam_x = m_camera_x;
+                    m_pan_start_cam_y = m_camera_y;
+                    m_panning = true;
+                }
             }
         }
     }
@@ -117,33 +130,6 @@ void GameState::update()
             // Calculate the camera difference and apply it
             m_camera_x = m_pan_start_cam_x + m_pan_start_x - getMouseX();
             m_camera_y = m_pan_start_cam_y + m_pan_start_y - getMouseY();
-        }
-    }
-    // UI - mirrored from render code
-    if (m_selected)
-    {
-        // Render the menu to the top right of the selected unit
-        const uint32_t x = (m_selected->getX() + 1) * kTilesize - m_camera_x;
-        uint32_t curr_y = m_selected->getY() * kTilesize - m_camera_y - 20;
-
-        Vec2 mousePos(getMouseX(), getMouseY());
-
-        Math::Rectangle move(x, curr_y, 140, 30);
-        if (Math::isColliding(mousePos, move))
-        {
-            m_selected->setState(Unit::InputState::MOVE);
-        }
-        curr_y += 32;
-        Math::Rectangle attack(x, curr_y, 140, 30);
-        if (Math::isColliding(mousePos, attack))
-        {
-            m_selected->setState(Unit::InputState::ATTACK);
-        }
-        curr_y += 32;
-        Math::Rectangle inventory(x, curr_y, 140, 30);
-        if (Math::isColliding(mousePos, inventory))
-        {
-            m_selected->setState(Unit::InputState::INVENTORY);
         }
     }
 }
@@ -166,6 +152,90 @@ void GameState::render()
             }
         }
     }
+
+    // Render overlays when needed
+    if (m_selected)
+    {
+        if (m_selected->getState() == Player::InputState::MOVE)
+        {
+            // Just assume the player can only melee attack for now
+            int x = m_selected->getX() * kTilesize;
+            int y = m_selected->getY() * kTilesize;
+            
+            if (!checkOccupied(m_selected->getX() - 1, m_selected->getY()))
+            {
+                m_white_overlay->render(
+                x - kTilesize - m_camera_x,
+                y - m_camera_y,
+                kTilesize,
+                kTilesize
+            );
+            }
+            if (!checkOccupied(m_selected->getX() + 1, m_selected->getY()))
+            {
+                m_white_overlay->render(
+                x + kTilesize - m_camera_x,
+                y - m_camera_y,
+                kTilesize,
+                kTilesize
+            );
+            }
+            if (!checkOccupied(m_selected->getX(), m_selected->getY() - 1))
+            {
+                m_white_overlay->render(
+                x - m_camera_x,
+                y - kTilesize - m_camera_y,
+                kTilesize,
+                kTilesize
+            );
+            }
+            if (!checkOccupied(m_selected->getX(), m_selected->getY() + 1))
+            {
+                m_white_overlay->render(
+                x - m_camera_x,
+                y + kTilesize - m_camera_y,
+                kTilesize,
+                kTilesize
+            );
+            }
+        }
+        if (m_selected->getState() == Player::InputState::ATTACK)
+        {
+            // Just assume the player can only melee attack for now
+            int x = m_selected->getX() * kTilesize;
+            int y = m_selected->getY() * kTilesize;
+            
+            m_white_overlay->render(
+                x - kTilesize - m_camera_x,
+                y - m_camera_y,
+                kTilesize,
+                kTilesize
+            );
+            m_white_overlay->render(
+                x + kTilesize - m_camera_x,
+                y - m_camera_y,
+                kTilesize,
+                kTilesize
+            );
+            m_white_overlay->render(
+                x - m_camera_x,
+                y - kTilesize - m_camera_y,
+                kTilesize,
+                kTilesize
+            );
+            m_white_overlay->render(
+                x - m_camera_x,
+                y + kTilesize - m_camera_y,
+                kTilesize,
+                kTilesize
+            );
+        }
+        if (m_selected->getState() == Player::InputState::INVENTORY)
+        {
+            // Do nothing...
+        }
+    }
+
     // Draw a grid overlay for EZ UX
     for (unsigned int row = 1; row < m_map_height; ++row)
     {
@@ -189,29 +259,23 @@ void GameState::render()
     }
 
     // Draw units
-    for (const Unit& unit : m_units)
+    for (const Unit * unit : m_units)
     {
-        unit.Render(m_camera_x, m_camera_y);
+        unit->Render(m_camera_x, m_camera_y, kTilesize);
     }
     // Render UI
-    if (m_selected)
+    if (m_selected && m_selected->getState() == Player::InputState::NONE)
     {
-        // Render the menu to the top right of the selected unit
-        const uint32_t x = (m_selected->getX() + 1) * kTilesize - m_camera_x;
-        uint32_t curr_y = m_selected->getY() * kTilesize - m_camera_y - 20;
-
-        constexpr uint32_t text_padding = 6;
-
-        m_ui_texture->render(x, curr_y, 140, 30);
-        static Texture move(getTextTexture("move", "ui30", {40, 40, 50, 255}));
-        move.render(x + text_padding, curr_y);
-        curr_y += 32;
-        m_ui_texture->render(x, curr_y, 140, 30);
-        static Texture attack(getTextTexture("attack", "ui30", {40, 40, 50, 255}));
-        attack.render(x + text_padding, curr_y);
-        curr_y += 32;
-        m_ui_texture->render(x, curr_y, 140, 30);
-        static Texture inventory(getTextTexture("inventory", "ui30", {40, 40, 50, 255}));
-        inventory.render(x + text_padding, curr_y);
+        m_selected->RenderUI(m_camera_x, m_camera_y, kTilesize, m_ui_texture);
     }
+}
+
+bool GameState::checkOccupied(unsigned int x, unsigned int y) const
+{
+    if (x < 0 || x >= m_map_width || y < 0 || y > m_map_height) return true;
+    for (const Unit * const unit : m_units)
+    {
+        if (unit->getX() == x && unit->getY() == y) return true;
+    }
+    return false;
 }
