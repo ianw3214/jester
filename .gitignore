@@ -1,0 +1,14 @@
+# UTILITY FILES
+*.bat
+
+# BUILD
+build/
+
+# IDE FILES
+.vscode/
+
+# RESOURCE FILES
+res/
+
+# ENGINE SOURCE
+QcEngine/
