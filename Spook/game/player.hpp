@@ -10,7 +10,6 @@ public:
         MOVE,
         ATTACK,
         INTERACT,
-        INVENTORY
     };
 
     Player(int x = 0, int y = 0);

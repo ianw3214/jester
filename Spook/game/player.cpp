@@ -50,13 +50,6 @@ bool Player::HandleClick(int mouse_x, int mouse_y, int cam_x, int cam_y, int til
             setState(InputState::INTERACT);
             return true;
         }
-        curr_y += 32;
-        Math::Rectangle inventory(x, curr_y, 140, 30);
-        if (Math::isColliding(mousePos, inventory))
-        {
-            setState(InputState::INVENTORY);
-            return true;
-        }
     }
     else
     {
@@ -108,18 +101,14 @@ void Player::RenderUI(int cam_x, int cam_y, int tilesize, Texture * base) const
     base->render(x, curr_y, 140, 30);
     static Texture interact(QcE::get_instance()->getTextEngine()->getTexture("interact", "ui30", {40, 40, 50, 255}));
     interact.render(x + text_padding, curr_y);
-    curr_y += 32;
-    base->render(x, curr_y, 140, 30);
-    static Texture inventory(QcE::get_instance()->getTextEngine()->getTexture("inventory", "ui30", {40, 40, 50, 255}));
-    inventory.render(x + text_padding, curr_y);
 }
 
 bool Player::HandleClickMove(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize)
 {
     if (m_movesLeft <= 0) return false;
 
-	int mouse_tile_x = mouse_x / tilesize;
-	int mouse_tile_y = mouse_y / tilesize;
+	int mouse_tile_x = (mouse_x + cam_x) / tilesize;
+	int mouse_tile_y = (mouse_y + cam_y) / tilesize;
 
 	// Make sure mouse clicked within 1 square
 	if (std::abs(mouse_tile_x - (int)m_pos_x) + std::abs(mouse_tile_y - (int)m_pos_y) != 1)
@@ -142,8 +131,8 @@ bool Player::HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, i
 {
     if (m_attacked) return false;
 
-	int mouse_tile_x = mouse_x / tilesize;
-	int mouse_tile_y = mouse_y / tilesize;
+	int mouse_tile_x = (mouse_x + cam_x) / tilesize;
+	int mouse_tile_y = (mouse_y + cam_y) / tilesize;
 
 	// TODO: Make sure attack is valid for different attack types
 	if (std::abs(mouse_tile_x - (int)m_pos_x) + std::abs(mouse_tile_y - (int)m_pos_y) != 1)
@@ -163,8 +152,8 @@ bool Player::HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, i
 
 bool Player::HandleClickInteract(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize)
 {
-	int mouse_tile_x = mouse_x / tilesize;
-	int mouse_tile_y = mouse_y / tilesize;
+	int mouse_tile_x = (mouse_x + cam_x) / tilesize;
+	int mouse_tile_y = (mouse_y + cam_y) / tilesize;
 
 	// Make sure mouse clicked within 1 square
 	if (std::abs(mouse_tile_x - (int) m_pos_x) + std::abs(mouse_tile_y - (int) m_pos_y) != 1)

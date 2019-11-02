@@ -4,6 +4,7 @@
 #include "unit.hpp"
 #include "player.hpp"
 #include "interactable.hpp"
+#include "inventory.hpp"
 
 #include <vector>
 
@@ -34,13 +35,15 @@ public:
     bool checkOccupied(unsigned int x, unsigned int y) const;
     Unit * getUnitAt(unsigned int x, unsigned int y);
 	Interactable * getInteractable(unsigned int x, unsigned int y);
+	Inventory& getInventory() { return m_inventory; }
 private:
     // Map data
     uint32_t m_map_width;
     uint32_t m_map_height;
     std::vector<Tile> m_tilemap;
 
-    // Game entities
+    // Game data
+	Inventory m_inventory;
     std::vector<GridItem*> m_items;
     // references, do not own
     std::vector<Unit*> m_units;

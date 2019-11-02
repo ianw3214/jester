@@ -6,7 +6,7 @@ class Resource : public Interactable
 {
 public:
     Resource(int x = 0, int y = 0);
-    Resource(Texture * tex, Texture * collected, int w, int h, int x = 0, int y = 0);
+    Resource(int id, Texture * tex, Texture * collected, int w, int h, int x = 0, int y = 0);
     ~Resource();
 
     void SetGameRef(GameState * g) { game = g; }
@@ -18,6 +18,8 @@ private:
 
     // Resource data
     bool m_collected;
+    // Each collectible only drops one item
+    int m_item_id;
 
     GameState * game;
 };

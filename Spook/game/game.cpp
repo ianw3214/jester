@@ -68,11 +68,13 @@ GameState::GameState()
     }
     {
         Resource * res = new Resource(3, 8);
+		res->SetGameRef(this);
         m_items.push_back(res);
         m_interactables.push_back(res);
     }
     {
 		Resource * res = new Resource(6, 3);
+		res->SetGameRef(this);
         m_items.push_back(res);
         m_interactables.push_back(res);
     }
@@ -334,10 +336,6 @@ void GameState::render()
 					);
 				}
 			}
-            if (m_selected->getState() == Player::InputState::INVENTORY)
-            {
-                // Do nothing...
-            }
         }
     }
 
@@ -382,6 +380,7 @@ void GameState::render()
         }
     }
     m_end_turn->render(0, 600, 180, 80);
+	m_inventory.Render();
 }
 
 bool GameState::checkOccupied(unsigned int x, unsigned int y) const
