@@ -205,30 +205,42 @@ void GameState::render()
             int x = m_selected->getX() * kTilesize;
             int y = m_selected->getY() * kTilesize;
             
-            m_white_overlay->render(
-                x - kTilesize - m_camera_x,
-                y - m_camera_y,
-                kTilesize,
-                kTilesize
-            );
-            m_white_overlay->render(
-                x + kTilesize - m_camera_x,
-                y - m_camera_y,
-                kTilesize,
-                kTilesize
-            );
-            m_white_overlay->render(
-                x - m_camera_x,
-                y - kTilesize - m_camera_y,
-                kTilesize,
-                kTilesize
-            );
-            m_white_overlay->render(
-                x - m_camera_x,
-                y + kTilesize - m_camera_y,
-                kTilesize,
-                kTilesize
-            );
+            if (getUnitAt(m_selected->getX() - 1, m_selected->getY()))
+            {
+                m_white_overlay->render(
+                    x - kTilesize - m_camera_x,
+                    y - m_camera_y,
+                    kTilesize,
+                    kTilesize
+                );
+            }
+            if (getUnitAt(m_selected->getX() + 1, m_selected->getY()))
+            {
+                m_white_overlay->render(
+                    x + kTilesize - m_camera_x,
+                    y - m_camera_y,
+                    kTilesize,
+                    kTilesize
+                );   
+            }
+            if (getUnitAt(m_selected->getX(), m_selected->getY() - 1))
+            {
+                m_white_overlay->render(
+                    x - m_camera_x,
+                    y - kTilesize - m_camera_y,
+                    kTilesize,
+                    kTilesize
+                );   
+            }
+            if (getUnitAt(m_selected->getX(), m_selected->getY() + 1))
+            {
+                m_white_overlay->render(
+                    x - m_camera_x,
+                    y + kTilesize - m_camera_y,
+                    kTilesize,
+                    kTilesize
+                );   
+            }
         }
         if (m_selected->getState() == Player::InputState::INVENTORY)
         {
@@ -263,6 +275,11 @@ void GameState::render()
     {
         unit->Render(m_camera_x, m_camera_y, kTilesize);
     }
+    // Draw unit health
+    for (const Unit * unit : m_units)
+    {
+        unit->RenderHealth(m_camera_x, m_camera_y, kTilesize);
+    }
     // Render UI
     if (m_selected && m_selected->getState() == Player::InputState::NONE)
     {
@@ -278,4 +295,16 @@ bool GameState::checkOccupied(unsigned int x, unsigned int y) const
         if (unit->getX() == x && unit->getY() == y) return true;
     }
     return false;
+}
+
+Unit * GameState::getUnitAt(unsigned int x, unsigned int y)
+{
+    for (Unit * unit : m_units)
+    {
+        if (unit->getX() == x && unit->getY() == y)
+        {
+            return unit;
+        }
+    }
+    return nullptr;
 }

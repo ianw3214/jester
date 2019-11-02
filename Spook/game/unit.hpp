@@ -16,11 +16,19 @@ public:
     uint32_t getY() const { return m_pos_y; }
 
     void Render(int cam_x, int cam_y, int tilesize) const;
+    void RenderHealth(int cam_x, int cam_y, int tilesize) const;
+
+    void TakeDamage(int damage);
 
 protected:
+    // Unit sprite info
     Texture * m_texture;
     uint32_t m_unitWidth;
     uint32_t m_unitHeight;
+
+    // Unit properties
+    int m_maxHealth;
+    int m_currentHealth;
 
     // Position stored in terms of tile position
     uint32_t m_pos_x;

@@ -31,6 +31,7 @@ public:
     void render() override;
 
     bool checkOccupied(unsigned int x, unsigned int y) const;
+    Unit * getUnitAt(unsigned int x, unsigned int y);
 private:
     // Map data
     uint32_t m_map_width;
