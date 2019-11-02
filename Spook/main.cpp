@@ -1,5 +1,8 @@
 #include "core/engine.hpp"
+#include "game/game.hpp"
 
+// FOR REFERENCE :D
+/*
 class TestState : public State {
 public:
     
@@ -50,12 +53,13 @@ private:
     AnimatedTexture * test_animatedTexture;
     WAV_track test_track;
 };
+*/
 
 int main(int argc, char* argv[]) {
 
-    QcEngine::createWindow("TEST", 500, 500, false, SDL_WINDOW_BORDERLESS);
-    QcEngine::setRates(60, 3);
-    QcEngine::setState(std::make_unique<TestState>());
+    QcEngine::createWindow("TEST", 1280, 720, false, SDL_WINDOW_BORDERLESS);
+    QcEngine::setRates(60, 30);
+    QcEngine::setState(std::make_unique<GameState>());
 
     while(QcEngine::isRunning()) {
         QcEngine::update();
