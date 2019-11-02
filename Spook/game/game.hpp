@@ -3,6 +3,7 @@
 
 #include "unit.hpp"
 #include "player.hpp"
+#include "interactable.hpp"
 
 #include <vector>
 
@@ -32,6 +33,7 @@ public:
 
     bool checkOccupied(unsigned int x, unsigned int y) const;
     Unit * getUnitAt(unsigned int x, unsigned int y);
+	Interactable * getInteractable(unsigned int x, unsigned int y);
 private:
     // Map data
     uint32_t m_map_width;
@@ -39,8 +41,11 @@ private:
     std::vector<Tile> m_tilemap;
 
     // Game entities
+    std::vector<GridItem*> m_items;
+    // references, do not own
     std::vector<Unit*> m_units;
-    std::vector<Player*> m_players; // references, do not own
+    std::vector<Player*> m_players;
+    std::vector<Interactable*> m_interactables;
 
     // Textures
     Texture * m_tile_texture;

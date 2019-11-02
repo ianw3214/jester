@@ -2,7 +2,7 @@
 #include "game.hpp"
 
 Player::Player(int x, int y)
-    : Unit(x, y)
+    : Unit(new Texture("res/unit.png"), 64, 128, x, y)
     , m_inputState(InputState::NONE)
 {
 
@@ -44,6 +44,13 @@ bool Player::HandleClick(int mouse_x, int mouse_y, int cam_x, int cam_y, int til
             return true;
         }
         curr_y += 32;
+        Math::Rectangle interact(x, curr_y, 140, 30);
+        if (Math::isColliding(mousePos, interact))
+        {
+            setState(InputState::INTERACT);
+            return true;
+        }
+        curr_y += 32;
         Math::Rectangle inventory(x, curr_y, 140, 30);
         if (Math::isColliding(mousePos, inventory))
         {
@@ -62,6 +69,10 @@ bool Player::HandleClick(int mouse_x, int mouse_y, int cam_x, int cam_y, int til
         {
             if (HandleClickAttack(mouse_x, mouse_y, cam_x, cam_y, tileSize)) return true;
         }
+		if (m_inputState == InputState::INTERACT)
+		{
+			if (HandleClickInteract(mouse_x, mouse_y, cam_x, cam_y, tileSize)) return true;
+		}
     }
     return false;
 }
@@ -95,6 +106,10 @@ void Player::RenderUI(int cam_x, int cam_y, int tilesize, Texture * base) const
     attack.render(x + text_padding, curr_y);
     curr_y += 32;
     base->render(x, curr_y, 140, 30);
+    static Texture interact(QcE::get_instance()->getTextEngine()->getTexture("interact", "ui30", {40, 40, 50, 255}));
+    interact.render(x + text_padding, curr_y);
+    curr_y += 32;
+    base->render(x, curr_y, 140, 30);
     static Texture inventory(QcE::get_instance()->getTextEngine()->getTexture("inventory", "ui30", {40, 40, 50, 255}));
     inventory.render(x + text_padding, curr_y);
 }
@@ -103,90 +118,65 @@ bool Player::HandleClickMove(int mouse_x, int mouse_y, int cam_x, int cam_y, int
 {
     if (m_movesLeft <= 0) return false;
 
-    int x = m_pos_x * tilesize;
-    int y = m_pos_y * tilesize;
+	int mouse_tile_x = mouse_x / tilesize;
+	int mouse_tile_y = mouse_y / tilesize;
 
-    Vec2 mousePos(mouse_x, mouse_y);
+	// Make sure mouse clicked within 1 square
+	if (std::abs(mouse_tile_x - (int)m_pos_x) + std::abs(mouse_tile_y - (int)m_pos_y) != 1)
+	{
+		return false;
+	}
 
-    Math::Rectangle left(x - tilesize - cam_x, y - cam_y, tilesize, tilesize);
-    if (!game->checkOccupied(m_pos_x - 1, m_pos_y) && Math::isColliding(mousePos, left))
-    {
-        m_inputState = InputState::NONE;
-        m_movesLeft--;
-        m_pos_x--;
-        return true;
-    }
-    Math::Rectangle right(x + tilesize - cam_x, y - cam_y, tilesize, tilesize);
-    if (!game->checkOccupied(m_pos_x + 1, m_pos_y) && Math::isColliding(mousePos, right))
-    {
-        m_inputState = InputState::NONE;
-        m_movesLeft--;
-        m_pos_x++;
-        return true;
-    }
-    Math::Rectangle up(x - cam_x, y - tilesize - cam_y, tilesize, tilesize);
-    if (!game->checkOccupied(m_pos_x, m_pos_y - 1) && Math::isColliding(mousePos, up))
-    {
-        m_inputState = InputState::NONE;
-        m_movesLeft--;
-        m_pos_y--;
-        return true;
-    }
-    Math::Rectangle down(x- cam_x, y + tilesize - cam_y, tilesize, tilesize);
-    if (!game->checkOccupied(m_pos_x, m_pos_y + 1) && Math::isColliding(mousePos, down))
-    {
-        m_inputState = InputState::NONE;
-        m_movesLeft--;
-        m_pos_y++;
-        return true;
-    }
-    return false;
+	if (!game->checkOccupied(mouse_tile_x, mouse_tile_y))
+	{
+		m_inputState = InputState::NONE;
+		m_movesLeft--;
+		m_pos_y = mouse_tile_y;
+		m_pos_x = mouse_tile_x;
+		return true;
+	}
+	return false;
 }
 
 bool Player::HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize)
 {
     if (m_attacked) return false;
 
-    int x = m_pos_x * tilesize;
-    int y = m_pos_y * tilesize;
+	int mouse_tile_x = mouse_x / tilesize;
+	int mouse_tile_y = mouse_y / tilesize;
 
-    Vec2 mousePos(mouse_x, mouse_y);
+	// TODO: Make sure attack is valid for different attack types
+	if (std::abs(mouse_tile_x - (int)m_pos_x) + std::abs(mouse_tile_y - (int)m_pos_y) != 1)
+	{
+		return false;
+	}
 
-    Math::Rectangle left(x - tilesize - cam_x, y - cam_y, tilesize, tilesize);
-    Unit * unit_l = game->getUnitAt(m_pos_x - 1, m_pos_y);
-    if (unit_l && Math::isColliding(mousePos, left))
-    {
-        m_inputState = InputState::NONE;
-        m_attacked = true;
-        unit_l->TakeDamage(1);
-        return true;
-    }
-    Math::Rectangle right(x + tilesize - cam_x, y - cam_y, tilesize, tilesize);
-    Unit * unit_r = game->getUnitAt(m_pos_x + 1, m_pos_y);
-    if (unit_r && Math::isColliding(mousePos, right))
-    {
-        m_inputState = InputState::NONE;
-        m_attacked = true;
-        unit_r->TakeDamage(1);
-        return true;
-    }
-    Math::Rectangle up(x - cam_x, y - tilesize - cam_y, tilesize, tilesize);
-    Unit * unit_u = game->getUnitAt(m_pos_x, m_pos_y - 1);
-    if (unit_u && Math::isColliding(mousePos, up))
-    {
-        m_inputState = InputState::NONE;
-        m_attacked = true;
-        unit_u->TakeDamage(1);
-        return true;
-    }
-    Math::Rectangle down(x - cam_x, y + tilesize - cam_y, tilesize, tilesize);
-    Unit * unit_d = game->getUnitAt(m_pos_x, m_pos_y + 1);
-    if (unit_d && Math::isColliding(mousePos, down))
-    {
-        m_inputState = InputState::NONE;
-        m_attacked = true;
-        unit_d->TakeDamage(1);
-        return true;
-    }
-    return false;
+	if (Unit * unit = game->getUnitAt(mouse_tile_x, mouse_tile_y))
+	{
+		m_inputState = InputState::NONE;
+		m_attacked = true;
+		unit->TakeDamage(1);
+		return true;
+	}
+	return false;
+}
+
+bool Player::HandleClickInteract(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize)
+{
+	int mouse_tile_x = mouse_x / tilesize;
+	int mouse_tile_y = mouse_y / tilesize;
+
+	// Make sure mouse clicked within 1 square
+	if (std::abs(mouse_tile_x - (int) m_pos_x) + std::abs(mouse_tile_y - (int) m_pos_y) != 1)
+	{
+		return false;
+	}
+
+	if (Interactable * interactable = game->getInteractable(mouse_tile_x, mouse_tile_y))
+	{
+		m_inputState = InputState::NONE;
+		interactable->Interact();
+		return true;
+	}
+	return false;
 }

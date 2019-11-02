@@ -1,5 +1,7 @@
 #include "game.hpp"
 
+#include "resource.hpp"
+
 GameState::GameState()
     : m_map_width(10)
     , m_map_height(10)
@@ -28,35 +30,51 @@ GameState::GameState()
     {
         Player * player = new Player(new Texture("res/IRA.png"), 64, 128, 0, 0);
         player->SetGameState(this);
+        m_items.push_back(player);
         m_units.push_back(player);
         m_players.push_back(player);   
     }
     {
         Player * player = new Player(6, 7);
         player->SetGameState(this);
+        m_items.push_back(player);
         m_units.push_back(player);
         m_players.push_back(player);   
     }
     {
         Player * player = new Player(4, 3);
         player->SetGameState(this);
+        m_items.push_back(player);
         m_units.push_back(player);
         m_players.push_back(player);   
     }
     {
         Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 2, 2);
         unit->SetGameState(this);
+        m_items.push_back(unit);
         m_units.push_back(unit);
     }
     {
         Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 3, 3);
         unit->SetGameState(this);
+        m_items.push_back(unit);
         m_units.push_back(unit);
     }
     {
         Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 4, 4);
         unit->SetGameState(this);
+        m_items.push_back(unit);
         m_units.push_back(unit);
+    }
+    {
+        Resource * res = new Resource(3, 8);
+        m_items.push_back(res);
+        m_interactables.push_back(res);
+    }
+    {
+		Resource * res = new Resource(6, 3);
+        m_items.push_back(res);
+        m_interactables.push_back(res);
     }
 
     StartTurn();
@@ -273,6 +291,49 @@ void GameState::render()
                     );   
                 }
             }
+			if (m_selected->getState() == Player::InputState::INTERACT)
+			{
+				// Player can only interact with neighboor tiles
+				int x = m_selected->getX() * kTilesize;
+				int y = m_selected->getY() * kTilesize;
+
+				if (getInteractable(m_selected->getX() - 1, m_selected->getY()))
+				{
+					m_white_overlay->render(
+						x - kTilesize - m_camera_x,
+						y - m_camera_y,
+						kTilesize,
+						kTilesize
+					);
+				}
+				if (getInteractable(m_selected->getX() + 1, m_selected->getY()))
+				{
+					m_white_overlay->render(
+						x + kTilesize - m_camera_x,
+						y - m_camera_y,
+						kTilesize,
+						kTilesize
+					);
+				}
+				if (getInteractable(m_selected->getX(), m_selected->getY() - 1))
+				{
+					m_white_overlay->render(
+						x - m_camera_x,
+						y - kTilesize - m_camera_y,
+						kTilesize,
+						kTilesize
+					);
+				}
+				if (getInteractable(m_selected->getX(), m_selected->getY() + 1))
+				{
+					m_white_overlay->render(
+						x - m_camera_x,
+						y + kTilesize - m_camera_y,
+						kTilesize,
+						kTilesize
+					);
+				}
+			}
             if (m_selected->getState() == Player::InputState::INVENTORY)
             {
                 // Do nothing...
@@ -303,9 +364,9 @@ void GameState::render()
     }
 
     // Draw units
-    for (const Unit * unit : m_units)
+    for (const GridItem * item : m_items)
     {
-        unit->Render(m_camera_x, m_camera_y, kTilesize);
+        item->Render(m_camera_x, m_camera_y, kTilesize);
     }
     // Draw unit health
     for (const Unit * unit : m_units)
@@ -326,9 +387,9 @@ void GameState::render()
 bool GameState::checkOccupied(unsigned int x, unsigned int y) const
 {
     if (x < 0 || x >= m_map_width || y < 0 || y > m_map_height) return true;
-    for (const Unit * const unit : m_units)
+    for (const GridItem * const item : m_items)
     {
-        if (unit->getX() == x && unit->getY() == y) return true;
+        if (item->getX() == x && item->getY() == y) return true;
     }
     return false;
 }
@@ -343,6 +404,18 @@ Unit * GameState::getUnitAt(unsigned int x, unsigned int y)
         }
     }
     return nullptr;
+}
+
+Interactable * GameState::getInteractable(unsigned int x, unsigned int y)
+{
+	for (Interactable * interactable : m_interactables)
+	{
+		if (interactable->getX() == x && interactable->getY() == y)
+		{
+			return interactable->CanInteract() ? interactable : nullptr;
+		}
+	}
+	return nullptr;
 }
 
 void GameState::StartTurn()

@@ -9,6 +9,7 @@ public:
         NONE,
         MOVE,
         ATTACK,
+        INTERACT,
         INVENTORY
     };
 
@@ -31,4 +32,5 @@ private:
     // Helper functions
     bool HandleClickMove(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize);
     bool HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize);
+    bool HandleClickInteract(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize);
 };
