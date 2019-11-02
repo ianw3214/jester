@@ -1,5 +1,6 @@
 #pragma once
 #include "core/engine.hpp"
+#include "gameitem.hpp"
 class GameState;
 
 //////////////////////////////////////////////////////
@@ -14,6 +15,10 @@ public:
 
     uint32_t getX() const { return m_pos_x; }
     uint32_t getY() const { return m_pos_y; }
+    uint16_t getMovesLeft() const { return m_movesLeft; }
+    bool getAttacked() const { return m_attacked; }
+
+    void StartTurn();
 
     void Render(int cam_x, int cam_y, int tilesize) const;
     void RenderHealth(int cam_x, int cam_y, int tilesize) const;

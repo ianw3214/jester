@@ -13,6 +13,7 @@ public:
     };
 
     Player(int x = 0, int y = 0);
+    Player(Texture * tex, int w, int h, int x = 0, int y = 0);
     ~Player();
 
     void setState(InputState state) { m_inputState = state; }

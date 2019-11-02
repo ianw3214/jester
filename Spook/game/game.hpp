@@ -46,6 +46,7 @@ private:
     Texture * m_tile_texture;
     Texture * m_ui_texture;
     Texture * m_white_overlay;
+    Texture * m_end_turn;
 
     // Game State
     uint32_t m_camera_x;
@@ -53,10 +54,15 @@ private:
 
     Player * m_selected;
     bool m_playerTurn;
+    int tempDelta;
 
     bool m_panning;
     uint32_t m_pan_start_x;
     uint32_t m_pan_start_y;
     int32_t m_pan_start_cam_x;
     int32_t m_pan_start_cam_y;
+
+    // Helper functions
+    void StartTurn();
+    void EndTurn();
 };

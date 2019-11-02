@@ -7,6 +7,14 @@ Player::Player(int x, int y)
 {
 
 }
+
+Player::Player(Texture * tex, int w, int h, int x, int y)
+    : Unit(tex, w, h, x, y)
+    , m_inputState(InputState::NONE)
+{
+
+}
+
 Player::~Player()
 {
 
@@ -93,6 +101,8 @@ void Player::RenderUI(int cam_x, int cam_y, int tilesize, Texture * base) const
 
 bool Player::HandleClickMove(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize)
 {
+    if (m_movesLeft <= 0) return false;
+
     int x = m_pos_x * tilesize;
     int y = m_pos_y * tilesize;
 
@@ -133,9 +143,10 @@ bool Player::HandleClickMove(int mouse_x, int mouse_y, int cam_x, int cam_y, int
     return false;
 }
 
-#include <iostream>
 bool Player::HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize)
 {
+    if (m_attacked) return false;
+
     int x = m_pos_x * tilesize;
     int y = m_pos_y * tilesize;
 
@@ -146,6 +157,7 @@ bool Player::HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, i
     if (unit_l && Math::isColliding(mousePos, left))
     {
         m_inputState = InputState::NONE;
+        m_attacked = true;
         unit_l->TakeDamage(1);
         return true;
     }
@@ -154,6 +166,7 @@ bool Player::HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, i
     if (unit_r && Math::isColliding(mousePos, right))
     {
         m_inputState = InputState::NONE;
+        m_attacked = true;
         unit_r->TakeDamage(1);
         return true;
     }
@@ -162,6 +175,7 @@ bool Player::HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, i
     if (unit_u && Math::isColliding(mousePos, up))
     {
         m_inputState = InputState::NONE;
+        m_attacked = true;
         unit_u->TakeDamage(1);
         return true;
     }
@@ -170,9 +184,9 @@ bool Player::HandleClickAttack(int mouse_x, int mouse_y, int cam_x, int cam_y, i
     if (unit_d && Math::isColliding(mousePos, down))
     {
         m_inputState = InputState::NONE;
+        m_attacked = true;
         unit_d->TakeDamage(1);
         return true;
     }
-    std::cout << "BRUH\n";
     return false;
 }
