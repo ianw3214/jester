@@ -15,6 +15,9 @@ class GridItem;
 constexpr uint32_t kTilesize = 96;
 constexpr uint32_t kTurnTime = 444;
 
+constexpr int kPortraitWidth = 250;
+constexpr int kPortraitPadding = 50;
+
 //////////////////////////////////////////////////////
 class GameState : public State
 {
@@ -61,6 +64,7 @@ private:
     // Textures
     Texture * m_tile_texture;
     Texture * m_ui_texture;
+	Texture * m_ui_dark;
     Texture * m_white_overlay;
     Texture * m_end_turn;
 	Texture * m_crafting;

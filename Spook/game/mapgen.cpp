@@ -67,18 +67,22 @@ MapGen::MapData MapGen::Generate()
     data.m_tiles[(spawn_y + 1) * width + (spawn_x + 1)] = {1};
     {
         Player * player = new Player(new Texture("res/IRA.png"), 64, 128, spawn_x, spawn_y);
+		player->SetPortraitTexture(new Texture("res/portrait_IRA.png"));
+		data.m_players.push_back(player);
+    }
+    {
+        Player * player = new Player(new Texture("res/ZAYA.png"), 64, 96, spawn_x, spawn_y + 1);
+        player->SetPortraitTexture(new Texture("res/portrait_ZAYA.png"));
         data.m_players.push_back(player);
     }
     {
-        Player * player = new Player(spawn_x, spawn_y + 1);
+        Player * player = new Player(new Texture("res/TICA.png"), 80, 80, spawn_x + 1, spawn_y);
+        player->SetPortraitTexture(new Texture("res/portrait_TICA.png"));
         data.m_players.push_back(player);
     }
     {
-        Player * player = new Player(spawn_x + 1, spawn_y);
-        data.m_players.push_back(player);
-    }
-    {
-        Player * player = new Player(spawn_x + 1, spawn_y + 1);
+        Player * player = new Player(new Texture("res/BROCK.png"), 130, 140, spawn_x + 1, spawn_y + 1);
+        player->SetPortraitTexture(new Texture("res/portrait_BROCK.png"));
         data.m_players.push_back(player);
     }
 

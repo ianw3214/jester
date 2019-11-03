@@ -24,9 +24,10 @@ GameState::GameState()
 	SDL_GetWindowSize(QcEngine::getWindow(), &m_screenWidth, &m_screenHeight);
 
     // Initialize textures
-    createFont("ui30", "res/Munro.ttf", 30);
+    createFont("ui40", "res/Munro.ttf", 30);
     m_tile_texture = new Texture("res/tile.png");
     m_ui_texture = new Texture("res/ui_base.png");
+	m_ui_dark = new Texture("res/ui_dark.png");
     m_white_overlay = new Texture("res/white_overlay.png");
     m_end_turn = new Texture("res/endturn.png");
 	m_crafting = new Texture("res/crafting.png");
@@ -77,6 +78,7 @@ GameState::~GameState()
     }
     delete m_tile_texture;
     delete m_ui_texture;
+	delete m_ui_dark;
     delete m_white_overlay;
     delete m_end_turn;
 	delete m_crafting;
@@ -96,6 +98,16 @@ void GameState::cleanup()
 
 void GameState::update()
 {
+	// If the player died, handle game over
+	int health_total = 0;
+	for (const Player * player : m_players)
+	{
+		health_total += player->GetCurrentHealth();
+	}
+	if (health_total <= 0)
+	{
+		// TODO: HAndle..
+	}
     // Temporary time delaying code
     if (!m_playerTurn)
     {
@@ -448,7 +460,7 @@ void GameState::render()
     // Draw unit health
     for (const Unit * unit : m_units)
     {
-		if (unit->ShouldRender())
+		if (unit->ShouldRender() && !unit->IsPlayer())
 		{
 			unit->RenderHealth(m_camera_x, m_camera_y, kTilesize);
 		}
@@ -459,7 +471,7 @@ void GameState::render()
     {
         if (m_selected && m_selected->getState() == Player::InputState::NONE)
         {
-            m_selected->RenderUI(m_camera_x, m_camera_y, kTilesize, m_ui_texture);
+            m_selected->RenderUI(m_camera_x, m_camera_y, kTilesize, m_ui_texture, m_ui_dark);
         }
     }
 	m_crafting->render(0, 400, 160, 70);
@@ -583,13 +595,28 @@ void GameState::renderPlayerPortraits()
 	for (unsigned int index = 0; index < m_players.size(); ++index)
 	{
 		Player * player = m_players[index];
-		// Draw a portrait
-		static Texture portrait("res/portrait_temp.png");
-		portrait.render(index * 200 + 20, 20);
+		if (player->GetPortraitTexture())
+		{
+			player->GetPortraitTexture()->render(index * kPortraitWidth + (index + 1) * kPortraitPadding, 20);
+		}
+		else 
+		{
+			static Texture portrait("res/portrait_temp.png");
+			portrait.render(index * kPortraitWidth + (index + 1) * kPortraitPadding, 20);
+		}
 
-		// Draw the hunger level
-		static Texture yellow("res/yellow.png");
-		int w = static_cast<int>(100.f * static_cast<float>(player->GetHunger()) / static_cast<float>(kMaxHunger));
-		yellow.render(index * 200 + 25, 90, w, 20);
+		{	// Draw the health
+			static Texture green("res/green.png");
+			int w = static_cast<int>(100.f * (static_cast<float>(player->GetCurrentHealth()) / static_cast<float>(player->GetMaxHealth())));
+			green.render(index * kPortraitWidth + (index + 1) * kPortraitPadding + 140, 30, w, 20);
+		}
+
+		{	// Draw the hunger level
+			static Texture yellow("res/yellow.png");
+			
+			int w = static_cast<int>(100.f * (static_cast<float>(player->GetHunger()) / static_cast<float>(kMaxHunger)));
+			yellow.render(index * kPortraitWidth + (index + 1) * kPortraitPadding + 140, 60, w, 20);
+		}
+	
 	}
 }

@@ -1,7 +1,7 @@
 #include "interactable.hpp"
 
 Interactable::Interactable(int x, int y)
-    : GridItem(new Texture("res/tree.png"), 64, 128, x, y)
+    : GridItem(new Texture("res/tree.png"), 64, 156, x, y)
 {
 
 }
