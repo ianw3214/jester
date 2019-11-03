@@ -69,7 +69,7 @@ private:
     uint32_t m_camera_x;
     uint32_t m_camera_y;
 
-    Player * m_selected;
+    Player * m_selected;    // Reference, not owned
     bool m_playerTurn;
     int tempDelta;
 

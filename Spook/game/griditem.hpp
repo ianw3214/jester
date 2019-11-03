@@ -4,7 +4,6 @@
 class GridItem
 {
 public:
-
     GridItem(Texture * tex, int w, int h, int x, int y)
         : m_texture(tex)
         , m_textureWidth(w)
@@ -25,11 +24,6 @@ public:
             m_textureHeight
         );
     }
-
-    bool operator<(const GridItem& other) {
-        return m_pos_y < other.getY();
-    }
-
 protected:
     // Unit sprite info
     Texture * m_texture;

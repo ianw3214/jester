@@ -85,13 +85,19 @@ MapGen::MapData MapGen::Generate()
         int y = rand() % height;
         if (data.m_tiles[y * width + x].index == 0) continue;
         if ((x == spawn_x || x == spawn_x + 1) && (y == spawn_y || y == spawn_y + 1)) continue;
+        bool overlap = false;
+        for (Interactable * item : data.m_interactables)
+        {
+            if (item->getX() == x && item->getY() == y) overlap = true;
+        }
+        if (overlap) continue;
         // Only trees for now
         Resource * res = new Resource(x, y);
         data.m_interactables.push_back(res);
         num_resources_added--;
     }
 
-    // FINALLY GENERATE AIs
+    // GENERATE AIs
     int num_AIs_added = num_AIs;
     while(num_AIs_added > 0)
     {
@@ -99,14 +105,16 @@ MapGen::MapData MapGen::Generate()
         int y = rand() % height;
         if (data.m_tiles[y * width + x].index == 0) continue;
         if ((x == spawn_x || x == spawn_x + 1) && (y == spawn_y || y == spawn_y + 1)) continue;
+        bool overlap = false;
         for (Interactable * item : data.m_interactables)
         {
-            if (item->getX() == x && item->getY() == y) continue;
+            if (item->getX() == x && item->getY() == y) overlap = true;
         }
         for (AI * ai : data.m_AIs)
         {
-            if (ai->getX() == x && ai->getY() == y) continue;
+            if (ai->getX() == x && ai->getY() == y) overlap = true;
         }
+        if (overlap) continue;
         // 50/50 chance for now
         int key = rand() % 2;
         if (key == 0)
@@ -123,6 +131,27 @@ MapGen::MapData MapGen::Generate()
             data.m_AIs.push_back(unit);
         }
         num_AIs_added--;
+    }
+
+    // GENERATE THE END GOAL
+    bool goal_added = false;
+    while(!goal_added)
+    {
+        int x = rand() % width;
+        int y = rand() % height;
+        if (data.m_tiles[y * width + x].index == 0) continue;
+        if ((x == spawn_x || x == spawn_x + 1) && (y == spawn_y || y == spawn_y + 1)) continue;
+        for (Interactable * item : data.m_interactables)
+        {
+            if (item->getX() == x && item->getY() == y) continue;
+        }
+        for (AI * ai : data.m_AIs)
+        {
+            if (ai->getX() == x && ai->getY() == y) continue;
+        }
+        Interactable * interactable = new Interactable(new Texture("res/stairs.png"), 100, 100, x, y);
+        data.m_interactables.push_back(interactable);
+        goal_added = true;
     }
 
     return data;

@@ -67,7 +67,18 @@ GameState::GameState()
 
 GameState::~GameState()
 {
-    
+    for (GridItem * item : m_items)
+    {
+        delete item;
+    }
+    delete m_tile_texture;
+    delete m_ui_texture;
+    delete m_white_overlay;
+    delete m_end_turn;
+	delete m_crafting;
+	delete m_craftingBackground;
+	delete m_craftingLeft;
+	delete m_craftingRight;
 }
 
 void GameState::init()
@@ -412,8 +423,9 @@ void GameState::render()
     }
 
     // Draw units
-    // TODO: Put this somewhere else so it isn't done every frame
-    std::sort(m_items.begin(), m_items.end());
+    std::sort(m_items.begin(), m_items.end(), [](const GridItem * a, const GridItem * b){
+        return a->getY() < b->getY();
+    });
     for (const GridItem * item : m_items)
     {
         item->Render(m_camera_x, m_camera_y, kTilesize);
