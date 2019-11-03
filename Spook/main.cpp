@@ -1,5 +1,6 @@
 #include "core/engine.hpp"
 #include "game/game.hpp"
+#include "intro/intro.hpp"
 
 #include <ctime>
 
@@ -63,13 +64,16 @@ int main(int argc, char* argv[]) {
 
     QcEngine::createWindow("TEST", 1600, 900, false, SDL_WINDOW_BORDERLESS);
     QcEngine::setRates(40, 36);
-    QcEngine::setState(std::make_unique<GameState>());
 
     WAV_track test_track = QcE::get_instance()->getAudioEngine()->loadWAV("res/music/theme.wav", true);
     if (!test_track) {
         ERR("Something went wrong when trying to load WAV File");
     }
-    // QcE::get_instance()->getAudioEngine()->play(test_track);
+    QcE::get_instance()->getAudioEngine()->play(test_track);
+    QcE::get_instance()->getAudioEngine()->setVolume(test_track, 0.3f);
+
+    // QcEngine::setState(std::make_unique<GameState>());
+    QcEngine::setState(std::make_unique<IntroState>(test_track));
 
     while(QcEngine::isRunning()) {
         QcEngine::update();

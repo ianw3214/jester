@@ -1,3 +1,4 @@
 target_sources(Spook PRIVATE main.cpp)
 
 add_subdirectory(game)
+add_subdirectory(intro)
