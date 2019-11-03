@@ -1,6 +1,7 @@
 #pragma once
 #include "core/engine.hpp"
 #include "griditem.hpp"
+#include "inventory.hpp"
 class GameState;
 
 //////////////////////////////////////////////////////
@@ -12,6 +13,8 @@ public:
     virtual ~Unit() {}
 
     void SetGameState(GameState * g) { game = g; }
+	void SetMaxHealth(int health);
+	void SetItemDrop(ItemType item);
 
     uint16_t getMovesLeft() const { return m_movesLeft; }
     bool getAttacked() const { return m_attacked; }
@@ -31,6 +34,7 @@ protected:
     // Unit states
     uint16_t m_movesLeft;
     bool m_attacked;
+	ItemType m_itemDrop;
 
     // Store a copy of the game
     GameState * game;

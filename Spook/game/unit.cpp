@@ -1,4 +1,5 @@
 #include "unit.hpp"
+#include "game.hpp"
 
 Unit::Unit(int x, int y)
     : GridItem(new Texture("res/enemy.png"), 64, 128, x, y)
@@ -15,6 +16,17 @@ Unit::Unit(Texture * tex, int w, int h, int x, int y)
     , m_maxHealth(10)
     , m_currentHealth(10)
 {}
+
+void Unit::SetMaxHealth(int health)
+{
+	m_maxHealth = health;
+	m_currentHealth = health;
+}
+
+void Unit::SetItemDrop(ItemType item)
+{
+	m_itemDrop = item;
+}
 
 void Unit::StartTurn()
 {
@@ -42,6 +54,12 @@ void Unit::RenderHealth(int cam_x, int cam_y, int tilesize) const
 
 void Unit::TakeDamage(int damage)
 {
+	if (m_currentHealth <= 0) return;
     m_currentHealth -= damage;
-    if (m_currentHealth < 0) m_currentHealth = 0;
+	// HANDLE THE DEATH OF UNITS HERE
+	if (m_currentHealth <= 0)
+	{
+		m_currentHealth = 0;
+		game->getInventory().AddItem(m_itemDrop);
+	}
 }

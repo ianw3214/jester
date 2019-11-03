@@ -8,6 +8,8 @@ enum ItemType
 {
     NONE = -1,
     WOOD = 0,
+    MEAT,
+    CAMPFIRE,
     COUNT
 };
 
@@ -20,7 +22,15 @@ public:
         std::string icon;   // This stores the path to the icon
         std::string name;
     };
-    static Item items[COUNT];
+    static Item items[ItemType::COUNT];
+
+    struct Recipe
+    {
+        ItemType item1;
+        ItemType item2;
+        ItemType item3;
+    };
+    static Recipe recipes[ItemType::COUNT];
 };
 
 ///////////////////////////////////////////////////////////////
@@ -33,6 +43,9 @@ public:
 
     bool Full() const;
     bool AddItem(int id);
+    bool HasItemsFor(int id);
+    void Craft(int id);
+    void RemoveItem(int id);
 
     void Render();
 private:

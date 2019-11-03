@@ -5,11 +5,13 @@
 GameState::GameState()
     : m_map_width(10)
     , m_map_height(10)
+	, m_state(State::GAME)
     , m_camera_x(0)
     , m_camera_y(0)
     , m_selected(nullptr)
     , m_playerTurn(false)
     , m_panning(false)
+	, m_craftingIndex(ItemType::WOOD)
 {
     for (unsigned int i = 0; i < m_map_width; ++i)
     {
@@ -25,6 +27,10 @@ GameState::GameState()
     m_ui_texture = new Texture("res/ui_base.png");
     m_white_overlay = new Texture("res/white_overlay.png");
     m_end_turn = new Texture("res/endturn.png");
+	m_crafting = new Texture("res/crafting.png");
+	m_craftingBackground = new Texture("res/crafting_bg.png");
+	m_craftingLeft = new Texture("res/crafting_left.png");
+	m_craftingRight = new Texture("res/crafting_right.png");
 
     // Initialize some units
     {
@@ -49,23 +55,38 @@ GameState::GameState()
         m_players.push_back(player);   
     }
     {
-        Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 2, 2);
+        AI * unit = new AI(new Texture("res/enemy.png"), 64, 128, 2, 2);
         unit->SetGameState(this);
+		unit->SetStrategy(AI::Strategy::HOSTILE_DUMB);
         m_items.push_back(unit);
         m_units.push_back(unit);
+		m_AIs.push_back(unit);
     }
     {
-        Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 3, 3);
+		AI * unit = new AI(new Texture("res/enemy.png"), 64, 128, 3, 3);
         unit->SetGameState(this);
+		unit->SetStrategy(AI::Strategy::HOSTILE_DUMB);
         m_items.push_back(unit);
         m_units.push_back(unit);
+		m_AIs.push_back(unit);
     }
     {
-        Unit * unit = new Unit(new Texture("res/enemy.png"), 64, 128, 4, 4);
+		AI * unit = new AI(new Texture("res/enemy.png"), 64, 128, 4, 4);
         unit->SetGameState(this);
+		unit->SetStrategy(AI::Strategy::HOSTILE_DUMB);
         m_items.push_back(unit);
         m_units.push_back(unit);
+		m_AIs.push_back(unit);
     }
+	{
+		AI * unit = new AI(new Texture("res/pig.png"), 90, 90, 4, 2);
+		unit->SetGameState(this);
+		unit->SetMaxHealth(2);
+		unit->SetItemDrop(ItemType::MEAT);
+		m_items.push_back(unit);
+		m_units.push_back(unit);
+		m_AIs.push_back(unit);
+	}
     {
         Resource * res = new Resource(3, 8);
 		res->SetGameRef(this);
@@ -130,6 +151,12 @@ void GameState::update()
         {
             // Handle UI
             Vec2 mouse(getMouseX(), getMouseY());
+			Math::Rectangle craftingButton(0, 400, 160, 70);
+			if (Math::isColliding(mouse, craftingButton))
+			{
+				m_state = State::CRAFTING;
+				handled = true;
+			}
             Math::Rectangle endButton(0, 600, 180, 80);
             if (m_playerTurn && Math::isColliding(mouse, endButton))
             {
@@ -139,6 +166,68 @@ void GameState::update()
             }
             if (!handled)
             {
+				if (m_state == State::CRAFTING)
+				{
+					constexpr int x = (1280 - 220) / 2;
+					constexpr int y = (620 - 52) / 2;
+
+					// Left and right buttons
+					Math::Rectangle left(x - 52 - 5, y, 52, 52);
+					if (Math::isColliding(mouse, left)) 
+					{
+						// Find the next valid crafting recipe and render it
+						ItemDatabase::Recipe * recipe;
+						do {
+							m_craftingIndex = static_cast<ItemType>(static_cast<int>(m_craftingIndex) - 1);
+							if (m_craftingIndex <= ItemType::NONE)
+							{
+								m_craftingIndex = static_cast<ItemType>(static_cast<int>(ItemType::COUNT) - 1);
+							}
+							recipe = &(ItemDatabase::recipes[m_craftingIndex]);
+						} while (recipe->item1 == ItemType::NONE && recipe->item2 == ItemType::NONE && recipe->item3 == ItemType::NONE);
+						handled = true;
+					}
+					Math::Rectangle right(x + 220 + 5, y, 52, 52);
+					if (Math::isColliding(mouse, right))
+					{
+						// Find the next valid crafting recipe and render it
+						ItemDatabase::Recipe * recipe;
+						do {
+							m_craftingIndex = static_cast<ItemType>(static_cast<int>(m_craftingIndex) + 1);
+							if (m_craftingIndex >= ItemType::COUNT)
+							{
+								m_craftingIndex = static_cast<ItemType>(0);
+							}
+							recipe = &(ItemDatabase::recipes[m_craftingIndex]);
+
+						} while (recipe->item1 == ItemType::NONE && recipe->item2 == ItemType::NONE && recipe->item3 == ItemType::NONE);
+						handled = true;
+					}
+
+					Math::Rectangle craft(x + 178, y + 10, 32, 32);
+					if (Math::isColliding(mouse, craft))
+					{
+						if (m_inventory.HasItemsFor(m_craftingIndex))
+						{
+							m_inventory.Craft(m_craftingIndex);
+						}
+						else
+						{
+							// TODO: User feedback for not enough items
+						}
+						handled = true;
+					}
+					// Exit the crafting screen the user clicks somewhere else
+					if (!handled)
+					{
+						Math::Rectangle area(x, y, 220, 52);
+						if (!Math::isColliding(mouse, area))
+						{
+							m_state = State::GAME;
+							handled = true;
+						}
+					}
+				}
                 int mouseTileX = (getMouseX() + m_camera_x) / kTilesize;
                 int mouseTileY = (getMouseY() + m_camera_y) / kTilesize;
                 for (Player * player : m_players)
@@ -379,8 +468,49 @@ void GameState::render()
             m_selected->RenderUI(m_camera_x, m_camera_y, kTilesize, m_ui_texture);
         }
     }
+	m_crafting->render(0, 400, 160, 70);
     m_end_turn->render(0, 600, 180, 80);
 	m_inventory.Render();
+
+	if (m_state == State::CRAFTING)
+	{
+		constexpr int x = (1280 - 220) / 2;
+		constexpr int y = (620 - 52) / 2;
+		m_craftingBackground->render(x, y);
+
+		// Left and right buttons
+		m_craftingLeft->render(x - 52 - 5, y);
+		m_craftingRight->render(x + 220 + 5, y);
+
+		// Find the next valid crafting recipe and render it
+		ItemDatabase::Recipe * recipe = &(ItemDatabase::recipes[m_craftingIndex]);
+		while (recipe->item1 == ItemType::NONE && recipe->item2 == ItemType::NONE && recipe->item3 == ItemType::NONE)
+		{
+			m_craftingIndex = static_cast<ItemType>(static_cast<int>(m_craftingIndex) + 1);
+			if (m_craftingIndex >= ItemType::COUNT)
+			{
+				m_craftingIndex = static_cast<ItemType>(0);
+			}
+			recipe = &(ItemDatabase::recipes[m_craftingIndex]);
+		}
+		if (recipe->item1 != ItemType::NONE)
+		{
+			Texture texture(ItemDatabase::items[recipe->item1].icon);
+			texture.render(x + 10, y + 10);
+		}
+		if (recipe->item2 != ItemType::NONE)
+		{
+			Texture texture(ItemDatabase::items[recipe->item2].icon);
+			texture.render(x + 52, y + 10);
+		}
+		if (recipe->item3 != ItemType::NONE)
+		{
+			Texture texture(ItemDatabase::items[recipe->item3].icon);
+			texture.render(x + 94, y + 10);
+		}
+		Texture texture(ItemDatabase::items[m_craftingIndex].icon);
+		texture.render(x + 178, y + 10);
+	}
 }
 
 bool GameState::checkOccupied(unsigned int x, unsigned int y) const
@@ -429,4 +559,9 @@ void GameState::EndTurn()
     {
         player->StartTurn();
     }
+	// HAVE THE AIs Take their turn
+	for (AI * ai : m_AIs)
+	{
+		ai->DoMoves();
+	}
 }
