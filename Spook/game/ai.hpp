@@ -3,6 +3,9 @@
 
 #include <vector>
 
+constexpr int kMaxMoveTries = 3;
+
+////////////////////////////////////////////////////////////////////////
 // struct to keep track of path when pathfinding
 struct Path {
 	std::vector<Vec2> path;
@@ -16,6 +19,7 @@ struct Path {
 	}
 };
 
+////////////////////////////////////////////////////////////////////////
 class AI : public Unit
 {
 public:
@@ -31,7 +35,8 @@ public:
 
 	void SetStrategy(Strategy strategy) { m_strategy = strategy; }
 
-	void DoMoves();
+	void MakePlan();
+	bool TakeAction();
 
 private:
 	Strategy m_strategy;
@@ -43,6 +48,12 @@ private:
 
 	bool findPath(Vec2 start, Vec2 end, Path & target, int max_steps);
 	bool pathfindHelper(Vec2 end, std::vector<Path>& open, std::vector<Vec2>& closed, Vec2 new_pos, const Path& shortest, Path& target);
+
+	// Data of the plan
+	Path m_path;
+	int m_path_index;
+	int m_num_move_tries;
+	int m_player_target;
 };
 
 // equality operator for paths to compare if 2 paths are the same

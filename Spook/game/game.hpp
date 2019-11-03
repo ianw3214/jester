@@ -13,6 +13,7 @@ class GridItem;
 #include <vector>
 
 constexpr uint32_t kTilesize = 96;
+constexpr uint32_t kTurnTime = 444;
 
 //////////////////////////////////////////////////////
 class GameState : public State
@@ -74,7 +75,7 @@ private:
 
     Player * m_selected;    // Reference, not owned
     bool m_playerTurn;
-    int tempDelta;
+	int m_turnDelta;		// Used for enemy turn timing
 
     bool m_panning;
     uint32_t m_pan_start_x;
@@ -89,6 +90,7 @@ private:
     // Helper functions
     void StartTurn();
     void EndTurn();
+	bool DoAIActions();
 
 	// Render helper functions
 	void renderPlayerPortraits();

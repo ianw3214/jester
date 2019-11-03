@@ -15,6 +15,7 @@ GameState::GameState()
     , m_camera_x(0)
     , m_camera_y(0)
     , m_selected(nullptr)
+	, m_turnDelta(0)
     , m_playerTurn(false)
     , m_panning(false)
 	, m_craftingIndex(ItemType::WOOD)
@@ -63,7 +64,6 @@ GameState::GameState()
     m_camera_y = player->getY() * kTilesize - 720 / 2;
 
     StartTurn();
-    tempDelta = 0;
 }
 
 GameState::~GameState()
@@ -96,15 +96,18 @@ void GameState::update()
     // Temporary time delaying code
     if (!m_playerTurn)
     {
-        if (tempDelta > 3000)
-        {
-            tempDelta = 0;
-            StartTurn();
-        }
-        else 
-        {
-            tempDelta += delta;
-        }
+		if (m_turnDelta > (int)kTurnTime)
+		{
+			if (!DoAIActions())
+			{
+				StartTurn();
+			}
+			m_turnDelta = 0;
+		}
+		else
+		{
+			m_turnDelta += delta;
+		}
     }
     if (keyPressed(SDL_SCANCODE_ESCAPE)) {
         exit();
@@ -551,8 +554,18 @@ void GameState::EndTurn()
 	// HAVE THE AIs Take their turn
 	for (AI * ai : m_AIs)
 	{
-		ai->DoMoves();
+		ai->MakePlan();
 	}
+}
+
+bool GameState::DoAIActions()
+{
+	bool action_taken = false;
+	for (AI * ai : m_AIs)
+	{
+		if (ai->TakeAction()) action_taken = true;
+	}
+	return action_taken;
 }
 
 void GameState::renderPlayerPortraits()

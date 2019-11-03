@@ -21,8 +21,20 @@ AI::~AI()
 
 }
 
-void AI::DoMoves()
+void AI::MakePlan()
 {
+	{	// Clear previous state
+		m_path.path.clear();
+		m_path.cost = 0;
+		m_path.score = 0;
+		m_path_index = 0;
+		m_num_move_tries = 0;
+		m_player_target = 0;
+
+		// Base unit things
+		m_movesLeft = 6;
+		m_attacked = false;
+	}
 	switch (m_strategy)
 	{
 	case Strategy::PEACEFUL: {
@@ -35,6 +47,49 @@ void AI::DoMoves()
 		// SHOULD NEVER HAPPEN D:
 	} break;
 	}
+}
+
+// Returns true if the AI took/can take an action
+bool AI::TakeAction()
+{
+	if (m_movesLeft > 0)
+	{
+		if ((unsigned int) m_path_index < m_path.path.size())
+		{
+			int x = m_path.path[m_path_index].x;
+			int y = m_path.path[m_path_index].y;
+			if (m_path_index > 0 && game->checkOccupied(x, y))
+			{
+				m_num_move_tries++;
+				if (m_num_move_tries < kMaxMoveTries)
+				{
+					return true;
+				}
+			}
+			else
+			{
+				m_pos_x = x;
+				m_pos_y = y;
+				m_path_index++;
+				m_movesLeft--;
+				return true;
+			}
+		}
+	}
+	if (m_strategy == Strategy::HOSTILE_DUMB)
+	{
+		if (!m_attacked)
+		{
+			Player * target = game->getPlayers()[m_player_target];
+			if (std::abs(static_cast<int>(target->getX()) - static_cast<int>(m_pos_x)) + std::abs(static_cast<int>(target->getY()) - static_cast<int>(m_pos_y)) == 1)
+			{
+				target->TakeDamage(1);
+				m_attacked = true;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void AI::HandlePeacefulStrategy()
@@ -50,9 +105,11 @@ void AI::HandlePeacefulStrategy()
 		int y_offset = rand() % dexterity - dexterity / 2;
 		if (!game->checkOccupied(m_pos_x + x_offset, m_pos_y + y_offset))
 		{
-			m_pos_x = m_pos_x + x_offset;
-			m_pos_y = m_pos_y + y_offset;
-			return;
+			Path path;
+			if (findPath(Vec2{ (int)m_pos_x, (int)m_pos_y }, Vec2{ (int)m_pos_x + x_offset, (int)m_pos_y + y_offset }, path, 10))
+			{
+				m_path = path;
+			}
 		}
 		tries--;
 	}
@@ -76,9 +133,8 @@ void AI::HandleHostileDumbStrategy()
 	Path path;
 	if (findPath(Vec2{ (int) m_pos_x, (int) m_pos_y }, Vec2{ (int) target->getX() + x_offset, (int) target->getY() + y_offset }, path, 10))
 	{
-		m_pos_x = target->getX() + x_offset;
-		m_pos_y = target->getY() + y_offset;
-		target->TakeDamage(1);
+		m_path = path;
+		m_player_target = key;
 	} 
 	else
 	{
