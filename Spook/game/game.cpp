@@ -1,5 +1,9 @@
 #include "game.hpp"
 
+#include "unit.hpp"
+#include "ai.hpp"
+#include "player.hpp"
+#include "interactable.hpp"
 #include "resource.hpp"
 
 GameState::GameState()
@@ -13,14 +17,6 @@ GameState::GameState()
     , m_panning(false)
 	, m_craftingIndex(ItemType::WOOD)
 {
-    for (unsigned int i = 0; i < m_map_width; ++i)
-    {
-        for (unsigned int j = 0; j < m_map_height; ++j)
-        {
-            m_tilemap.push_back({0});
-        }
-    }
-
     // Initialize textures
     createFont("ui30", "res/Munro.ttf", 30);
     m_tile_texture = new Texture("res/tile.png");
@@ -31,6 +27,14 @@ GameState::GameState()
 	m_craftingBackground = new Texture("res/crafting_bg.png");
 	m_craftingLeft = new Texture("res/crafting_left.png");
 	m_craftingRight = new Texture("res/crafting_right.png");
+    /*
+    for (unsigned int i = 0; i < m_map_width; ++i)
+    {
+        for (unsigned int j = 0; j < m_map_height; ++j)
+        {
+            m_tilemap.push_back({ 1 });
+        }
+    }
 
     // Initialize some units
     {
@@ -98,6 +102,33 @@ GameState::GameState()
 		res->SetGameRef(this);
         m_items.push_back(res);
         m_interactables.push_back(res);
+    }
+    */
+
+    MapGen::MapData data = MapGen::Generate();
+    m_map_width = data.width;
+    m_map_height = data.height;
+    m_tilemap = std::move(data.m_tiles);
+    
+    for (Player * player : data.m_players)
+    {
+        player->SetGameState(this);
+        m_items.push_back(player);
+        m_units.push_back(player);
+        m_players.push_back(player);
+    }
+    for (AI * unit : data.m_AIs)
+    {
+        unit->SetGameState(this);
+        m_items.push_back(unit);
+        m_units.push_back(unit);
+		m_AIs.push_back(unit);
+    }
+    for (Interactable * item : data.m_interactables)
+    {
+        item->SetGameRef(this);
+        m_items.push_back(item);
+        m_interactables.push_back(item);
     }
 
     StartTurn();
@@ -279,7 +310,7 @@ void GameState::render()
         for (unsigned int x = 0; x < m_map_width; ++x)
         {
             const Tile& tile = m_tilemap[y * m_map_height + x];
-            if (tile.index == 0)
+            if (tile.index == 1)
             {
                 m_tile_texture->render(
                     x * kTilesize - m_camera_x, 
@@ -518,6 +549,7 @@ void GameState::render()
 bool GameState::checkOccupied(unsigned int x, unsigned int y) const
 {
     if (x < 0 || x >= m_map_width || y < 0 || y > m_map_height) return true;
+	if (m_tilemap[y * m_map_width + x].index == 0) return true;
     for (const GridItem * const item : m_items)
     {
         if (item->getX() == x && item->getY() == y) return true;

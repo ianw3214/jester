@@ -1,5 +1,6 @@
 #include "player.hpp"
 #include "game.hpp"
+#include "interactable.hpp"
 
 Player::Player(int x, int y)
 	: Unit(new Texture("res/unit.png"), 64, 128, x, y)

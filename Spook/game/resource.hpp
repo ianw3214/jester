@@ -9,8 +9,6 @@ public:
     Resource(int id, Texture * tex, Texture * collected, int w, int h, int x = 0, int y = 0);
     ~Resource();
 
-    void SetGameRef(GameState * g) { game = g; }
-
     virtual bool CanInteract() const override;
 	virtual void Interact() override;
 private:
@@ -20,6 +18,4 @@ private:
     bool m_collected;
     // Each collectible only drops one item
     int m_item_id;
-
-    GameState * game;
 };

@@ -1,21 +1,17 @@
 #pragma once
 #include "core/engine.hpp"
 
-#include "unit.hpp"
-#include "ai.hpp"
-#include "player.hpp"
-#include "interactable.hpp"
+class Unit;
+class AI;
+class Player;
+class Interactable;
+
 #include "inventory.hpp"
+#include "mapgen.hpp"
 
 #include <vector>
 
 constexpr uint32_t kTilesize = 96;
-
-//////////////////////////////////////////////////////
-struct Tile
-{
-    int index;
-};
 
 //////////////////////////////////////////////////////
 class GameState : public State

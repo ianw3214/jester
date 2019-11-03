@@ -59,7 +59,7 @@ private:
 
 int main(int argc, char* argv[]) {
 
-	srand(time(nullptr));
+	srand(static_cast<unsigned int>(time(nullptr)));
 
     QcEngine::createWindow("TEST", 1280, 720, false, SDL_WINDOW_BORDERLESS);
     QcEngine::setRates(60, 30);
