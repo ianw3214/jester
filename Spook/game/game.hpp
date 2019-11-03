@@ -88,4 +88,7 @@ private:
     // Helper functions
     void StartTurn();
     void EndTurn();
+
+	// Render helper functions
+	void renderPlayerPortraits();
 };

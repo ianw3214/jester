@@ -2,8 +2,9 @@
 #include "game.hpp"
 
 Player::Player(int x, int y)
-    : Unit(new Texture("res/unit.png"), 64, 128, x, y)
-    , m_inputState(InputState::NONE)
+	: Unit(new Texture("res/unit.png"), 64, 128, x, y)
+	, m_inputState(InputState::NONE)
+	, m_hunger(kMaxHunger)
 {
 
 }
@@ -11,6 +12,7 @@ Player::Player(int x, int y)
 Player::Player(Texture * tex, int w, int h, int x, int y)
     : Unit(tex, w, h, x, y)
     , m_inputState(InputState::NONE)
+	, m_hunger(kMaxHunger)
 {
 
 }
@@ -101,6 +103,17 @@ void Player::RenderUI(int cam_x, int cam_y, int tilesize, Texture * base) const
     base->render(x, curr_y, 140, 30);
     static Texture interact(QcE::get_instance()->getTextEngine()->getTexture("interact", "ui30", {40, 40, 50, 255}));
     interact.render(x + text_padding, curr_y);
+}
+
+void Player::StartTurn()
+{
+	Unit::StartTurn();
+	m_hunger -= 5;
+	if (m_hunger <= 0)
+	{
+		m_hunger = 0;
+		TakeDamage(1);
+	}
 }
 
 bool Player::HandleClickMove(int mouse_x, int mouse_y, int cam_x, int cam_y, int tilesize)

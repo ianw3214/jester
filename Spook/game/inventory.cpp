@@ -115,12 +115,12 @@ void Inventory::RemoveItem(int id)
 
 void Inventory::Render()
 {
-    constexpr int inv_x = (1280 - 430) / 2;
-    constexpr int inv_y = 720 - 52 - 18;
-    m_backdrop->render(inv_x, inv_y, 430, 52);
+    constexpr int inv_x = (1280 - 750) / 2;
+    constexpr int inv_y = 720 - 84 - 18;
+    m_backdrop->render(inv_x, inv_y, 750, 84);
 
-    int x = (1280 - 430) / 2 + 10;
-    int y = 720 - 52 - 18 + 10;
+    int x = (1280 - 750) / 2 + 10;
+    int y = 720 - 84 - 18 + 10;
     for (unsigned int index = 0; index < kMaxInventorySlots; ++index)
     {
         int id = data[index];
@@ -130,6 +130,6 @@ void Inventory::Render()
             Texture icon(item.icon);
             icon.render(x, y);
         }
-        x += 32 + 10;
+        x += 64 + 10;
     }
 }

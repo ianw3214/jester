@@ -140,7 +140,7 @@ void GameState::update()
     {
         bool handled = false;
         // Handle inputs for the current selected unit
-        if (m_selected)
+        if (m_selected && m_state == State::GAME)
         {
             if (m_playerTurn && m_selected->HandleClick(getMouseX(), getMouseY(), m_camera_x, m_camera_y, kTilesize))
             {
@@ -168,11 +168,11 @@ void GameState::update()
             {
 				if (m_state == State::CRAFTING)
 				{
-					constexpr int x = (1280 - 220) / 2;
-					constexpr int y = (620 - 52) / 2;
+					constexpr int x = (1280 - 560) / 2;
+					constexpr int y = (620 - 120) / 2;
 
 					// Left and right buttons
-					Math::Rectangle left(x - 52 - 5, y, 52, 52);
+					Math::Rectangle left(x - 120 - 10, y, 120, 120);
 					if (Math::isColliding(mouse, left)) 
 					{
 						// Find the next valid crafting recipe and render it
@@ -187,7 +187,7 @@ void GameState::update()
 						} while (recipe->item1 == ItemType::NONE && recipe->item2 == ItemType::NONE && recipe->item3 == ItemType::NONE);
 						handled = true;
 					}
-					Math::Rectangle right(x + 220 + 5, y, 52, 52);
+					Math::Rectangle right(x + 560 + 10, y, 120, 120);
 					if (Math::isColliding(mouse, right))
 					{
 						// Find the next valid crafting recipe and render it
@@ -204,7 +204,7 @@ void GameState::update()
 						handled = true;
 					}
 
-					Math::Rectangle craft(x + 178, y + 10, 32, 32);
+					Math::Rectangle craft(x + 440, y + 10, 100, 100);
 					if (Math::isColliding(mouse, craft))
 					{
 						if (m_inventory.HasItemsFor(m_craftingIndex))
@@ -472,15 +472,17 @@ void GameState::render()
     m_end_turn->render(0, 600, 180, 80);
 	m_inventory.Render();
 
+	renderPlayerPortraits();
+
 	if (m_state == State::CRAFTING)
 	{
-		constexpr int x = (1280 - 220) / 2;
-		constexpr int y = (620 - 52) / 2;
-		m_craftingBackground->render(x, y);
+		constexpr int x = (1280 - 560) / 2;
+		constexpr int y = (620 - 120) / 2;
+		m_craftingBackground->render(x, y, 560, 120);
 
 		// Left and right buttons
-		m_craftingLeft->render(x - 52 - 5, y);
-		m_craftingRight->render(x + 220 + 5, y);
+		m_craftingLeft->render(x - 120 - 10, y, 120, 120);
+		m_craftingRight->render(x + 560 + 10, y, 120, 120);
 
 		// Find the next valid crafting recipe and render it
 		ItemDatabase::Recipe * recipe = &(ItemDatabase::recipes[m_craftingIndex]);
@@ -496,20 +498,20 @@ void GameState::render()
 		if (recipe->item1 != ItemType::NONE)
 		{
 			Texture texture(ItemDatabase::items[recipe->item1].icon);
-			texture.render(x + 10, y + 10);
+			texture.render(x + 10, y + 10, 100, 100);
 		}
 		if (recipe->item2 != ItemType::NONE)
 		{
 			Texture texture(ItemDatabase::items[recipe->item2].icon);
-			texture.render(x + 52, y + 10);
+			texture.render(x + 120, y + 10, 100, 100);
 		}
 		if (recipe->item3 != ItemType::NONE)
 		{
 			Texture texture(ItemDatabase::items[recipe->item3].icon);
-			texture.render(x + 94, y + 10);
+			texture.render(x + 230, y + 10, 100, 100);
 		}
 		Texture texture(ItemDatabase::items[m_craftingIndex].icon);
-		texture.render(x + 178, y + 10);
+		texture.render(x + 450, y + 10, 100, 100);
 	}
 }
 
@@ -549,19 +551,35 @@ Interactable * GameState::getInteractable(unsigned int x, unsigned int y)
 
 void GameState::StartTurn()
 {
+	for (Player * player : m_players)
+	{
+		player->StartTurn();
+	}
     m_playerTurn = true;
 }
 
 void GameState::EndTurn()
 {
     m_playerTurn = false;
-    for (Player * player : m_players)
-    {
-        player->StartTurn();
-    }
 	// HAVE THE AIs Take their turn
 	for (AI * ai : m_AIs)
 	{
 		ai->DoMoves();
+	}
+}
+
+void GameState::renderPlayerPortraits()
+{
+	for (unsigned int index = 0; index < m_players.size(); ++index)
+	{
+		Player * player = m_players[index];
+		// Draw a portrait
+		static Texture portrait("res/portrait_temp.png");
+		portrait.render(index * 200 + 20, 20);
+
+		// Draw the hunger level
+		static Texture yellow("res/yellow.png");
+		int w = static_cast<int>(100.f * static_cast<float>(player->GetHunger()) / static_cast<float>(kMaxHunger));
+		yellow.render(index * 200 + 25, 90, w, 20);
 	}
 }

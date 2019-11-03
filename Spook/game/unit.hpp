@@ -19,7 +19,7 @@ public:
     uint16_t getMovesLeft() const { return m_movesLeft; }
     bool getAttacked() const { return m_attacked; }
 
-    void StartTurn();
+    virtual void StartTurn();
 
     void RenderHealth(int cam_x, int cam_y, int tilesize) const;
 
