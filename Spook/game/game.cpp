@@ -11,6 +11,7 @@
 GameState::GameState()
     : m_map_width(10)
     , m_map_height(10)
+	, m_inventory(this)
 	, m_state(State::GAME)
     , m_camera_x(0)
     , m_camera_y(0)
@@ -22,6 +23,7 @@ GameState::GameState()
 	, m_next_level(false)
 {
 	SDL_GetWindowSize(QcEngine::getWindow(), &m_screenWidth, &m_screenHeight);
+	SDL_ShowCursor(0);
 
     // Initialize textures
     createFont("ui40", "res/Munro.ttf", 30);
@@ -34,6 +36,7 @@ GameState::GameState()
 	m_craftingBackground = new Texture("res/crafting_bg.png");
 	m_craftingLeft = new Texture("res/crafting_left.png");
 	m_craftingRight = new Texture("res/crafting_right.png");
+	m_cursor = new Texture("res/cursor.png");
 
     MapGen::MapData data = MapGen::Generate();
     m_map_width = data.width;
@@ -85,6 +88,7 @@ GameState::~GameState()
 	delete m_craftingBackground;
 	delete m_craftingLeft;
 	delete m_craftingRight;
+	delete m_cursor;
 }
 
 void GameState::init()
@@ -98,6 +102,9 @@ void GameState::cleanup()
 
 void GameState::update()
 {
+	if (keyPressed(SDL_SCANCODE_ESCAPE)) {
+		exit();
+	}
 	// If the player died, handle game over
 	int health_total = 0;
 	for (const Player * player : m_players)
@@ -108,7 +115,7 @@ void GameState::update()
 	{
 		// TODO: HAndle..
 	}
-    // Temporary time delaying code
+    // Time delaying on enemy turns
     if (!m_playerTurn)
     {
 		if (m_turnDelta > (int)kTurnTime)
@@ -124,9 +131,6 @@ void GameState::update()
 			m_turnDelta += delta;
 		}
     }
-    if (keyPressed(SDL_SCANCODE_ESCAPE)) {
-        exit();
-    }
     if (leftMousePressed())
     {
         bool handled = false;
@@ -137,6 +141,10 @@ void GameState::update()
             {
                 handled = true;
             }
+			if (m_inventory.HandleClick(getMouseX(), getMouseY(), m_screenWidth, m_screenHeight))
+			{
+				handled = true;
+			}
         }
         if (!handled)
         {
@@ -519,6 +527,8 @@ void GameState::render()
 		Texture texture(ItemDatabase::items[m_craftingIndex].icon);
 		texture.render(x + 450, y + 10, 100, 100);
 	}
+	// ALWAYS RENDER THE CURSOR LAST
+	m_cursor->render(getMouseX(), getMouseY());
 }
 
 bool GameState::checkOccupied(unsigned int x, unsigned int y) const

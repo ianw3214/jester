@@ -20,7 +20,7 @@ Player::Player(Texture * tex, int w, int h, int x, int y)
 	, m_hunger(kMaxHunger)
 	, m_portrait_texture(nullptr)
 {
-	SetMaxHealth(1);
+	
 }
 
 Player::~Player()
@@ -96,6 +96,12 @@ void Player::Deselect()
     m_texture->setBlendMode(SDL_BLENDMODE_BLEND);
     m_texture->setColourModulation({255, 255, 255});
     m_inputState = InputState::NONE;
+}
+
+void Player::AddHunger(int points)
+{
+	m_hunger += points;
+	if (points > kMaxHunger) points = kMaxHunger;
 }
 
 void Player::RenderUI(int cam_x, int cam_y, int tilesize, Texture * base, Texture * dark) const

@@ -1,6 +1,7 @@
 #pragma once
 #include "core/engine.hpp"
 
+class GameState;
 #include <string>
 
 ///////////////////////////////////////////////////////////////
@@ -10,6 +11,7 @@ enum ItemType
     WOOD = 0,
     MEAT,
     CAMPFIRE,
+    COOKED_MEAT,
     COUNT
 };
 
@@ -38,7 +40,7 @@ constexpr uint32_t kMaxInventorySlots = 10;
 class Inventory
 {
 public:
-    Inventory();
+    Inventory(GameState * game);
     ~Inventory();
 
     bool Full() const;
@@ -47,10 +49,16 @@ public:
     void Craft(int id);
     void RemoveItem(int id);
 
+    bool HandleClick(int mouse_x, int mouse_y, int screen_width, int screen_height);
     void Render(int screen_width, int screen_height);
+
+    bool Consume(int id);
 private:
     int data[kMaxInventorySlots];
 
     // Inventory textures
     Texture * m_backdrop;
+
+    // Reference to the game
+    GameState * game;
 };

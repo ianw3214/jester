@@ -24,6 +24,7 @@ public:
 	Texture * GetPortraitTexture() { return m_portrait_texture; }
 
 	int GetHunger() const { return m_hunger; }
+	void AddHunger(int points);
 
     void RenderUI(int cam_x, int cam_y, int tilesize, Texture * base, Texture * dark) const;
 

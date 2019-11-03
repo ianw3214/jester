@@ -44,6 +44,7 @@ public:
 	Interactable * getInteractable(unsigned int x, unsigned int y);
 	Inventory& getInventory() { return m_inventory; }
 	std::vector<Player*>& getPlayers() { return m_players; }
+	Player * getSelectedPlayer() { return m_selected; }
 
 	void nextLevel();
 private:
@@ -71,6 +72,7 @@ private:
 	Texture * m_craftingBackground;
 	Texture * m_craftingLeft;
 	Texture * m_craftingRight;
+	Texture * m_cursor;
 
     // Game State
 	State m_state;

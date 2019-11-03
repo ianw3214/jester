@@ -1,18 +1,24 @@
 #include "inventory.hpp"
 
+#include "game.hpp"
+#include "player.hpp"
+
 ItemDatabase::Item ItemDatabase::items[COUNT] = {
     { std::string("res/icons/wood.png"), std::string("wood") },
     { std::string("res/icons/meat.png"), std::string("meat") },
     { std::string("res/icons/campfire.png"), std::string("campfire") },
+    { std::string("res/icons/cooked_meat.png"), std::string("cooked meat") },
 };
 
 ItemDatabase::Recipe ItemDatabase::recipes[ItemType::COUNT] = {
     { ItemType::NONE, ItemType::NONE, ItemType::NONE },     // Wood
     { ItemType::NONE, ItemType::NONE, ItemType::NONE },     // Meat
     { ItemType::WOOD, ItemType::WOOD, ItemType::NONE },     // Campfire
+    { ItemType::CAMPFIRE, ItemType::MEAT, ItemType::NONE },     // Cooked Meat
 };
 
-Inventory::Inventory()
+Inventory::Inventory(GameState * game)
+    : game(game)
 {
     for (unsigned int i = 0; i < kMaxInventorySlots; ++i)
     {
@@ -113,6 +119,39 @@ void Inventory::RemoveItem(int id)
     }
 }
 
+bool Inventory::HandleClick(int mouse_x, int mouse_y, int screen_width, int screen_height)
+{
+    Vec2 mouse(mouse_x, mouse_y);
+
+    int inv_x = (screen_width - 750) / 2;
+    int inv_y = screen_height - 84 - 18;
+    Math::Rectangle inv(inv_x, inv_y, 750, 84);
+    if (Math::isColliding(mouse, inv))
+    {
+        int x = (screen_width - 750) / 2 + 10;
+        int y = screen_height- 84 - 18 + 10;
+        for (unsigned int index = 0; index < kMaxInventorySlots; ++index)
+        {
+            int id = data[index];
+            if (id > ItemType::NONE && id < ItemType::COUNT)
+            {
+                Math::Rectangle itemCol(x, y, 64, 64);
+                if (Math::isColliding(mouse, itemCol))
+                {
+                    if (Consume(id))
+                    {
+                        data[index] = ItemType::NONE;
+                    }
+                    break;
+                }
+            }
+            x += 64 + 10;
+        }
+        return true;
+    }
+    return false;
+}
+
 void Inventory::Render(int screen_width, int screen_height)
 {
     int inv_x = (screen_width - 750) / 2;
@@ -131,5 +170,28 @@ void Inventory::Render(int screen_width, int screen_height)
             icon.render(x, y);
         }
         x += 64 + 10;
+    }
+}
+
+// Assumes the item exists in the inventory
+bool Inventory::Consume(int id)
+{
+    switch(id)
+    {
+    case MEAT: {
+        game->getSelectedPlayer()->AddHunger(5);
+        return true;
+    } break;
+    case COOKED_MEAT: {
+        game->getSelectedPlayer()->AddHunger(40);
+        return true;
+    } break;
+    // THESE ITEMS DO NOTHING
+    case NONE:
+    case WOOD:
+    case CAMPFIRE:
+    case COUNT:
+    default:
+        return false;
     }
 }

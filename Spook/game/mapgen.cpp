@@ -135,7 +135,11 @@ MapGen::MapData MapGen::Generate()
         }
         if (key == 1)
         {
-            AI * unit = new AI(new Texture("res/enemy.png"), 64, 128, x, y);
+			AnimatedTexture * tex = new AnimatedTexture("res/enemy.png");
+			tex->generateAtlas(64, 128);
+			tex->addAnimationState(std::make_pair<int, int>(0, 29));
+			tex->changeAnimation(0);
+            AI * unit = new AI(tex, 64, 128, x, y);
             unit->SetStrategy(AI::Strategy::HOSTILE_DUMB);
             data.m_AIs.push_back(unit);
         }
