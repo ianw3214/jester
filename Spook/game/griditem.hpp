@@ -26,6 +26,10 @@ public:
         );
     }
 
+    bool operator<(const GridItem& other) {
+        return m_pos_y < other.getY();
+    }
+
 protected:
     // Unit sprite info
     Texture * m_texture;

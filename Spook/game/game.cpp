@@ -6,6 +6,8 @@
 #include "interactable.hpp"
 #include "resource.hpp"
 
+#include <algorithm>
+
 GameState::GameState()
     : m_map_width(10)
     , m_map_height(10)
@@ -27,89 +29,12 @@ GameState::GameState()
 	m_craftingBackground = new Texture("res/crafting_bg.png");
 	m_craftingLeft = new Texture("res/crafting_left.png");
 	m_craftingRight = new Texture("res/crafting_right.png");
-    /*
-    for (unsigned int i = 0; i < m_map_width; ++i)
-    {
-        for (unsigned int j = 0; j < m_map_height; ++j)
-        {
-            m_tilemap.push_back({ 1 });
-        }
-    }
-
-    // Initialize some units
-    {
-        Player * player = new Player(new Texture("res/IRA.png"), 64, 128, 0, 0);
-        player->SetGameState(this);
-        m_items.push_back(player);
-        m_units.push_back(player);
-        m_players.push_back(player);   
-    }
-    {
-        Player * player = new Player(6, 7);
-        player->SetGameState(this);
-        m_items.push_back(player);
-        m_units.push_back(player);
-        m_players.push_back(player);   
-    }
-    {
-        Player * player = new Player(4, 3);
-        player->SetGameState(this);
-        m_items.push_back(player);
-        m_units.push_back(player);
-        m_players.push_back(player);   
-    }
-    {
-        AI * unit = new AI(new Texture("res/enemy.png"), 64, 128, 2, 2);
-        unit->SetGameState(this);
-		unit->SetStrategy(AI::Strategy::HOSTILE_DUMB);
-        m_items.push_back(unit);
-        m_units.push_back(unit);
-		m_AIs.push_back(unit);
-    }
-    {
-		AI * unit = new AI(new Texture("res/enemy.png"), 64, 128, 3, 3);
-        unit->SetGameState(this);
-		unit->SetStrategy(AI::Strategy::HOSTILE_DUMB);
-        m_items.push_back(unit);
-        m_units.push_back(unit);
-		m_AIs.push_back(unit);
-    }
-    {
-		AI * unit = new AI(new Texture("res/enemy.png"), 64, 128, 4, 4);
-        unit->SetGameState(this);
-		unit->SetStrategy(AI::Strategy::HOSTILE_DUMB);
-        m_items.push_back(unit);
-        m_units.push_back(unit);
-		m_AIs.push_back(unit);
-    }
-	{
-		AI * unit = new AI(new Texture("res/pig.png"), 90, 90, 4, 2);
-		unit->SetGameState(this);
-		unit->SetMaxHealth(2);
-		unit->SetItemDrop(ItemType::MEAT);
-		m_items.push_back(unit);
-		m_units.push_back(unit);
-		m_AIs.push_back(unit);
-	}
-    {
-        Resource * res = new Resource(3, 8);
-		res->SetGameRef(this);
-        m_items.push_back(res);
-        m_interactables.push_back(res);
-    }
-    {
-		Resource * res = new Resource(6, 3);
-		res->SetGameRef(this);
-        m_items.push_back(res);
-        m_interactables.push_back(res);
-    }
-    */
 
     MapGen::MapData data = MapGen::Generate();
     m_map_width = data.width;
     m_map_height = data.height;
     m_tilemap = std::move(data.m_tiles);
-    
+
     for (Player * player : data.m_players)
     {
         player->SetGameState(this);
@@ -130,6 +55,11 @@ GameState::GameState()
         m_items.push_back(item);
         m_interactables.push_back(item);
     }
+
+    // Start the game centered on the players
+    Player * player = m_players.front();
+    m_camera_x = player->getX() * kTilesize - 1280 / 2;
+    m_camera_y = player->getY() * kTilesize - 720 / 2;
 
     StartTurn();
     tempDelta = 0;
@@ -482,6 +412,8 @@ void GameState::render()
     }
 
     // Draw units
+    // TODO: Put this somewhere else so it isn't done every frame
+    std::sort(m_items.begin(), m_items.end());
     for (const GridItem * item : m_items)
     {
         item->Render(m_camera_x, m_camera_y, kTilesize);
@@ -548,7 +480,7 @@ void GameState::render()
 
 bool GameState::checkOccupied(unsigned int x, unsigned int y) const
 {
-    if (x < 0 || x >= m_map_width || y < 0 || y > m_map_height) return true;
+    if (x < 0 || x >= m_map_width || y < 0 || y >= m_map_height) return true;
 	if (m_tilemap[y * m_map_width + x].index == 0) return true;
     for (const GridItem * const item : m_items)
     {

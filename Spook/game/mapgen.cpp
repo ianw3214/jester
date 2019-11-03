@@ -103,6 +103,10 @@ MapGen::MapData MapGen::Generate()
         {
             if (item->getX() == x && item->getY() == y) continue;
         }
+        for (AI * ai : data.m_AIs)
+        {
+            if (ai->getX() == x && ai->getY() == y) continue;
+        }
         // 50/50 chance for now
         int key = rand() % 2;
         if (key == 0)

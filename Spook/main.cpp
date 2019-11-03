@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
 	srand(static_cast<unsigned int>(time(nullptr)));
 
     QcEngine::createWindow("TEST", 1280, 720, false, SDL_WINDOW_BORDERLESS);
-    QcEngine::setRates(60, 30);
+    QcEngine::setRates(40, 36);
     QcEngine::setState(std::make_unique<GameState>());
 
     while(QcEngine::isRunning()) {
