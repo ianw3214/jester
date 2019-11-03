@@ -70,8 +70,8 @@ private:
 
     // Game State
 	State m_state;
-    uint32_t m_camera_x;
-    uint32_t m_camera_y;
+    int m_camera_x;
+    int m_camera_y;
 
     Player * m_selected;    // Reference, not owned
     bool m_playerTurn;
@@ -94,4 +94,8 @@ private:
 
 	// Render helper functions
 	void renderPlayerPortraits();
+
+	// Other metadata
+	int m_screenWidth;
+	int m_screenHeight;
 };

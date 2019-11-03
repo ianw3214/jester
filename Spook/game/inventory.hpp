@@ -47,7 +47,7 @@ public:
     void Craft(int id);
     void RemoveItem(int id);
 
-    void Render();
+    void Render(int screen_width, int screen_height);
 private:
     int data[kMaxInventorySlots];
 

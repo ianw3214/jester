@@ -61,9 +61,15 @@ int main(int argc, char* argv[]) {
 
 	srand(static_cast<unsigned int>(time(nullptr)));
 
-    QcEngine::createWindow("TEST", 1280, 720, false, SDL_WINDOW_BORDERLESS);
+    QcEngine::createWindow("TEST", 1600, 900, false, SDL_WINDOW_BORDERLESS);
     QcEngine::setRates(40, 36);
     QcEngine::setState(std::make_unique<GameState>());
+
+    WAV_track test_track = QcE::get_instance()->getAudioEngine()->loadWAV("res/music/theme.wav", true);
+    if (!test_track) {
+        ERR("Something went wrong when trying to load WAV File");
+    }
+    // QcE::get_instance()->getAudioEngine()->play(test_track);
 
     while(QcEngine::isRunning()) {
         QcEngine::update();

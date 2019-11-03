@@ -21,6 +21,9 @@ public:
 
     virtual void StartTurn();
 
+	virtual bool Collidable() const override { return m_currentHealth > 0; }
+
+	virtual bool ShouldRender() const override { return m_currentHealth > 0; }
     void RenderHealth(int cam_x, int cam_y, int tilesize) const;
 
     void TakeDamage(int damage);

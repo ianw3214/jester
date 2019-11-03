@@ -19,6 +19,9 @@ public:
     uint32_t getX() const { return m_pos_x; }
     uint32_t getY() const { return m_pos_y; }
 
+	virtual bool Collidable() const { return true; }
+
+    virtual bool ShouldRender() const { return true; }
     virtual void Render(int cam_x, int cam_y, int tilesize) const {
         m_texture->render(
             m_pos_x * tilesize - cam_x + (tilesize - (int) m_textureWidth) / 2, 

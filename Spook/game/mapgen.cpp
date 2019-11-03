@@ -120,11 +120,11 @@ MapGen::MapData MapGen::Generate()
             if (ai->getX() == x && ai->getY() == y) overlap = true;
         }
         if (overlap) continue;
-        // 50/50 chance for now
         int key = rand() % 2;
+        ////////////////////////////////// PIG
         if (key == 0)
         {
-            AI * unit = new AI(new Texture("res/pig.png"), 90, 90, x, y);
+            AI * unit = new AI(new Texture("res/pig.png"), 90, 70, x, y);
             unit->SetMaxHealth(2);
             unit->SetItemDrop(ItemType::MEAT);
             data.m_AIs.push_back(unit);

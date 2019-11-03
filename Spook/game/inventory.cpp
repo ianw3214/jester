@@ -113,14 +113,14 @@ void Inventory::RemoveItem(int id)
     }
 }
 
-void Inventory::Render()
+void Inventory::Render(int screen_width, int screen_height)
 {
-    constexpr int inv_x = (1280 - 750) / 2;
-    constexpr int inv_y = 720 - 84 - 18;
+    int inv_x = (screen_width - 750) / 2;
+    int inv_y = screen_height - 84 - 18;
     m_backdrop->render(inv_x, inv_y, 750, 84);
 
-    int x = (1280 - 750) / 2 + 10;
-    int y = 720 - 84 - 18 + 10;
+    int x = (screen_width - 750) / 2 + 10;
+    int y = screen_height- 84 - 18 + 10;
     for (unsigned int index = 0; index < kMaxInventorySlots; ++index)
     {
         int id = data[index];

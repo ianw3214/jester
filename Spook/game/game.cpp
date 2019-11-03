@@ -21,6 +21,8 @@ GameState::GameState()
 	, m_craftingIndex(ItemType::WOOD)
 	, m_next_level(false)
 {
+	SDL_GetWindowSize(QcEngine::getWindow(), &m_screenWidth, &m_screenHeight);
+
     // Initialize textures
     createFont("ui30", "res/Munro.ttf", 30);
     m_tile_texture = new Texture("res/tile.png");
@@ -60,8 +62,9 @@ GameState::GameState()
 
     // Start the game centered on the players
     Player * player = m_players.front();
-    m_camera_x = player->getX() * kTilesize - 1280 / 2;
-    m_camera_y = player->getY() * kTilesize - 720 / 2;
+    m_camera_x = static_cast<int>(player->getX() * kTilesize) - m_screenWidth / 2;
+	m_camera_y = static_cast<int>(player->getY() * kTilesize) - m_screenHeight / 2;
+
 
     StartTurn();
 }
@@ -144,8 +147,8 @@ void GameState::update()
             {
 				if (m_state == State::CRAFTING)
 				{
-					constexpr int x = (1280 - 560) / 2;
-					constexpr int y = (620 - 120) / 2;
+					int x = (m_screenWidth - 560) / 2;
+					int y = (m_screenHeight - 120) / 2;
 
 					// Left and right buttons
 					Math::Rectangle left(x - 120 - 10, y, 120, 120);
@@ -437,12 +440,19 @@ void GameState::render()
     });
     for (const GridItem * item : m_items)
     {
-        item->Render(m_camera_x, m_camera_y, kTilesize);
+		if (item->ShouldRender())
+		{
+			item->Render(m_camera_x, m_camera_y, kTilesize);
+		}
     }
     // Draw unit health
     for (const Unit * unit : m_units)
     {
-        unit->RenderHealth(m_camera_x, m_camera_y, kTilesize);
+		if (unit->ShouldRender())
+		{
+			unit->RenderHealth(m_camera_x, m_camera_y, kTilesize);
+		}
+
     }
     // Render UI
     if (m_playerTurn)
@@ -454,14 +464,14 @@ void GameState::render()
     }
 	m_crafting->render(0, 400, 160, 70);
     m_end_turn->render(0, 600, 180, 80);
-	m_inventory.Render();
+	m_inventory.Render(m_screenWidth, m_screenHeight);
 
 	renderPlayerPortraits();
 
 	if (m_state == State::CRAFTING)
 	{
-		constexpr int x = (1280 - 560) / 2;
-		constexpr int y = (620 - 120) / 2;
+		int x = (m_screenWidth - 560) / 2;
+		int y = (m_screenHeight - 120) / 2;
 		m_craftingBackground->render(x, y, 560, 120);
 
 		// Left and right buttons
@@ -505,7 +515,7 @@ bool GameState::checkOccupied(unsigned int x, unsigned int y) const
 	if (m_tilemap[y * m_map_width + x].index == 0) return true;
     for (const GridItem * const item : m_items)
     {
-        if (item->getX() == x && item->getY() == y) return true;
+        if (item->getX() == x && item->getY() == y && item->Collidable()) return true;
     }
     return false;
 }
