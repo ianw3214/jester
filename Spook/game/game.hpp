@@ -5,6 +5,7 @@ class Unit;
 class AI;
 class Player;
 class Interactable;
+class GridItem;
 
 #include "inventory.hpp"
 #include "mapgen.hpp"
@@ -39,6 +40,8 @@ public:
 	Interactable * getInteractable(unsigned int x, unsigned int y);
 	Inventory& getInventory() { return m_inventory; }
 	std::vector<Player*>& getPlayers() { return m_players; }
+
+	void nextLevel();
 private:
     // Map data
     uint32_t m_map_width;
@@ -80,6 +83,8 @@ private:
     int32_t m_pan_start_cam_y;
 
 	ItemType m_craftingIndex;
+
+	bool m_next_level;
 
     // Helper functions
     void StartTurn();

@@ -11,15 +11,18 @@ public:
         , m_pos_x(x)
         , m_pos_y(y)
     {}
-    virtual ~GridItem() {}
+    virtual ~GridItem() 
+    {
+        delete m_texture;
+    }
 
     uint32_t getX() const { return m_pos_x; }
     uint32_t getY() const { return m_pos_y; }
 
     virtual void Render(int cam_x, int cam_y, int tilesize) const {
         m_texture->render(
-            m_pos_x * tilesize - cam_x + (tilesize - m_textureWidth) / 2, 
-            m_pos_y * tilesize - cam_y + tilesize - m_textureHeight, 
+            m_pos_x * tilesize - cam_x + (tilesize - (int) m_textureWidth) / 2, 
+            m_pos_y * tilesize - cam_y + tilesize - (int) m_textureHeight,
             m_textureWidth, 
             m_textureHeight
         );

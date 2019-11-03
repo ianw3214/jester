@@ -1,7 +1,7 @@
 #pragma once
-#include "player.hpp"
-#include "ai.hpp"
-#include "resource.hpp"
+class Player;
+class AI;
+class Interactable;
 
 #include <vector>
 

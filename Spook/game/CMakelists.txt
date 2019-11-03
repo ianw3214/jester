@@ -1,2 +1,3 @@
-target_sources(Spook PRIVATE game.hpp unit.hpp player.hpp interactable.hpp resource.hpp inventory.hpp ai.hpp mapgen.hpp)
-target_sources(Spook PRIVATE game.cpp unit.cpp player.cpp interactable.cpp resource.cpp inventory.cpp ai.cpp mapgen.cpp)
+target_sources(Spook PRIVATE griditem.hpp)
+target_sources(Spook PRIVATE game.hpp unit.hpp player.hpp interactable.hpp resource.hpp inventory.hpp ai.hpp mapgen.hpp goal.hpp)
+target_sources(Spook PRIVATE game.cpp unit.cpp player.cpp interactable.cpp resource.cpp inventory.cpp ai.cpp mapgen.cpp goal.cpp)

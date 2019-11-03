@@ -1,12 +1,17 @@
 #include "mapgen.hpp"
 
+#include "player.hpp"
+#include "ai.hpp"
+#include "resource.hpp"
+#include "goal.hpp"
+
 // TDOO: Make these adjustable
-constexpr int width = 15;
-constexpr int height = 15;
-constexpr int steps = 330;
+constexpr int width = 20;
+constexpr int height = 20;
+constexpr int steps = 400;
 
 constexpr int num_resources = 10;
-constexpr int num_AIs = 20;
+constexpr int num_AIs = 15;
 
 MapGen::MapData MapGen::Generate()
 {
@@ -141,16 +146,20 @@ MapGen::MapData MapGen::Generate()
         int y = rand() % height;
         if (data.m_tiles[y * width + x].index == 0) continue;
         if ((x == spawn_x || x == spawn_x + 1) && (y == spawn_y || y == spawn_y + 1)) continue;
+		bool overlap = false;
         for (Interactable * item : data.m_interactables)
         {
-            if (item->getX() == x && item->getY() == y) continue;
+            if (item->getX() == x && item->getY() == y) overlap = true;
         }
         for (AI * ai : data.m_AIs)
         {
-            if (ai->getX() == x && ai->getY() == y) continue;
+            if (ai->getX() == x && ai->getY() == y) overlap = true;
         }
-        Interactable * interactable = new Interactable(new Texture("res/stairs.png"), 100, 100, x, y);
-        data.m_interactables.push_back(interactable);
+		if (overlap) continue;
+        // Interactable * interactable = new Interactable(new Texture("res/stairs.png"), 100, 100, x, y);
+        // data.m_interactables.push_back(interactable);
+        Goal * goal = new Goal(x, y);
+        data.m_interactables.push_back(goal);
         goal_added = true;
     }
 

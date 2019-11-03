@@ -18,6 +18,7 @@ GameState::GameState()
     , m_playerTurn(false)
     , m_panning(false)
 	, m_craftingIndex(ItemType::WOOD)
+	, m_next_level(false)
 {
     // Initialize textures
     createFont("ui30", "res/Munro.ttf", 30);
@@ -242,6 +243,11 @@ void GameState::update()
             m_camera_y = m_pan_start_cam_y + m_pan_start_y - getMouseY();
         }
     }
+	// State transitions?
+	if (m_next_level)
+	{
+		changeState(std::make_unique<GameState>());
+	}
 }
 
 void GameState::render()
@@ -422,7 +428,7 @@ void GameState::render()
         );
     }
 
-    // Draw units
+    // Draw items
     std::sort(m_items.begin(), m_items.end(), [](const GridItem * a, const GridItem * b){
         return a->getY() < b->getY();
     });
@@ -523,6 +529,11 @@ Interactable * GameState::getInteractable(unsigned int x, unsigned int y)
 		}
 	}
 	return nullptr;
+}
+
+void GameState::nextLevel()
+{
+	m_next_level = true;
 }
 
 void GameState::StartTurn()
